@@ -1,7 +1,7 @@
 import { Coord } from './coord';
 import { Gene } from './gene';
 import { Genome } from './genome';
-import { Actions, Nodes, Sensors, Node } from './models';
+import { Nodes, Node, Actions } from './models';
 import { NeuralNet } from './neuralnet';
 import { Neuron } from './neuron';
 import { params } from './utils';
@@ -27,25 +27,11 @@ export class Individual {
     this.nnet = new NeuralNet();
     this.connections = [];
     this.nodes = new Map<number, Node>();
+    // this.createWiringFromGenome();
   }
 
-  makeRenumberedConnectionList() {
-    this.connections = [];
-    for (const gene of this.genome.genes) {
-      this.connections.push(
-        new Gene(
-          gene.sourceType,
-          gene.sourceType == Nodes.NEURON
-            ? gene.sourceIndex % params.maxNumberNeurons
-            : gene.sourceIndex % Sensors.NUM_SENSES,
-          gene.sinkType,
-          gene.sinkType == Nodes.NEURON
-            ? gene.sinkIndex % params.maxNumberNeurons
-            : gene.sinkIndex % Actions.NUM_ACTIONS,
-          gene.weight
-        )
-      );
-    }
+  makeConnectionList() {
+    this.connections = [...this.genome.genes];
   }
 
   getNode(nodeIndex: number) {
@@ -115,7 +101,7 @@ export class Individual {
     }
   }
   createWiringFromGenome() {
-    this.makeRenumberedConnectionList();
+    this.makeConnectionList();
     this.makeNodeMap();
     this.cullUselessNeurons();
 
