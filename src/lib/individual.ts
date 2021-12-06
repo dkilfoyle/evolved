@@ -1,10 +1,10 @@
 import { Coord } from './coord';
 import { Gene } from './gene';
 import { Genome } from './genome';
-import { Nodes, Node, Actions } from './models';
+import { Nodes, Node } from './models';
 import { NeuralNet } from './neuralnet';
 import { Neuron } from './neuron';
-import { params } from './utils';
+import { params } from './params';
 
 export class Individual {
   alive: boolean;

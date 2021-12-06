@@ -18,22 +18,36 @@ describe('Individual', () => {
     // );
 
     genome.genes = [
-      new Gene(0, 7574, 0, 15290, 2.4861636469169373),
-      new Gene(0, 5150, 0, 26121, 1.142790939487151),
-      new Gene(1, 6086, 0, 12216, -1.622634462668488),
-      new Gene(0, 2902, 1, 16541, -0.5134911564336129),
-      new Gene(1, 20932, 1, 22191, 3.045912503827074),
-      new Gene(0, 10436, 1, 15266, 3.069997885821225),
-      new Gene(1, 10533, 1, 26416, -2.951891588576032),
-      new Gene(1, 24150, 1, 6507, 1.7292580213990405),
-      new Gene(0, 1964, 1, 14202, 0.4390910012126348),
-      new Gene(1, 2985, 0, 13140, 1.8943137530256369),
-      new Gene(0, 28034, 1, 25345, -1.1271399966105573),
-      new Gene(1, 853, 0, 8946, 2.3429095821144834),
-      new Gene(0, 17373, 0, 17059, -3.0568789535750955),
-      new Gene(1, 17548, 0, 9508, -2.95361301210089),
-      new Gene(1, 32534, 1, 26510, 3.734717143111734),
-      new Gene(0, 3615, 1, 13026, -2.048515535023567),
+      // sensor 1 to action 16
+      new Gene(1, 1, 1, 15, -2.95361301210089),
+
+      // sensor 5 to action 8
+      new Gene(1, 5, 1, 8, 3.734717143111734),
+
+      // neuron 4 to neuron 4
+      new Gene(0, 4, 0, 4, 3.069997885821225),
+
+      // neuron 3 to neuron 1
+      new Gene(0, 3, 0, 1, 3.069997885821225),
+
+      // sensor 2 to neuron 9 to neuron 8
+      new Gene(1, 2, 0, 9, -2.951891588576032),
+      new Gene(0, 9, 0, 8, 2.951891588576032),
+
+      // sensor 3 to neuron 7 to neuron 5 to action 10
+      new Gene(1, 3, 0, 7, -2.142790939487151),
+      new Gene(0, 7, 0, 5, 1.5134911564336129),
+      new Gene(0, 5, 1, 10, -2.951891588576032),
+
+      // neuron to action
+      new Gene(0, 9, 1, 1, 2.4861636469169373),
+      new Gene(0, 8, 1, 2, 1.142790939487151),
+      new Gene(0, 6, 1, 3, -1.622634462668488),
+      new Gene(0, 4, 1, 4, -0.5134911564336129),
+
+      // sensor to neuron
+      new Gene(1, 5, 0, 8, -1.1271399966105573),
+      new Gene(1, 12, 0, 3, 2.3429095821144834),
     ];
 
     indiv = new Individual(0, new Coord(0, 0), genome);
@@ -41,7 +55,7 @@ describe('Individual', () => {
 
   describe('makeRenumberedConnectionList', () => {
     beforeAll(() => {
-      indiv.makeRenumberedConnectionList();
+      indiv.makeConnectionList();
       console.log('Sensor (1) to Neuron (0)');
       indiv.connections
         .filter(
@@ -109,46 +123,43 @@ describe('Individual', () => {
 
   describe('makeNodeMap', () => {
     beforeAll(() => {
-      indiv.makeRenumberedConnectionList();
+      indiv.makeConnectionList();
       indiv.makeNodeMap();
     });
 
     // node with a sensor and static neuron inputs
-    it('calculates N0 correctly', () => {
-      expect(indiv.nodes.get(0)?.numOutputs).toEqual(1);
-      expect(indiv.nodes.get(0)?.numSelfInputs).toEqual(0);
-      expect(indiv.nodes.get(0)?.numInputsFromSensorsOrOtherNeurons).toEqual(2);
+    it('calculates N8 with multiple inputs correctly', () => {
+      expect(indiv.nodes.get(8)?.numOutputs).toEqual(1);
+      expect(indiv.nodes.get(8)?.numSelfInputs).toEqual(0);
+      expect(indiv.nodes.get(8)?.numInputsFromSensorsOrOtherNeurons).toEqual(2);
     });
 
     // a node with no inputs but 3 outputs
-    it('calculates N4 correctly', () => {
-      expect(indiv.nodes.get(4)?.numOutputs).toEqual(3);
-      expect(indiv.nodes.get(4)?.numSelfInputs).toEqual(0);
+    it('calculates N4 with self-input correctly', () => {
+      expect(indiv.nodes.get(4)?.numOutputs).toEqual(2);
+      expect(indiv.nodes.get(4)?.numSelfInputs).toEqual(1);
       expect(indiv.nodes.get(4)?.numInputsFromSensorsOrOtherNeurons).toEqual(0);
     });
 
     // a node with no outputs
-    it('calculates N8 correctly', () => {
-      expect(indiv.nodes.get(8)?.numOutputs).toEqual(0);
-      expect(indiv.nodes.get(8)?.numSelfInputs).toEqual(0);
-      expect(indiv.nodes.get(8)?.numInputsFromSensorsOrOtherNeurons).toEqual(1);
+    it('calculates N1 with 0 outputs correctly', () => {
+      expect(indiv.nodes.get(1)?.numOutputs).toEqual(0);
+      expect(indiv.nodes.get(1)?.numSelfInputs).toEqual(0);
+      expect(indiv.nodes.get(1)?.numInputsFromSensorsOrOtherNeurons).toEqual(1);
     });
   });
 
   describe('cullUselessNeurons', () => {
     beforeAll(() => {
-      indiv.makeRenumberedConnectionList();
+      indiv.makeConnectionList();
       indiv.makeNodeMap();
       indiv.cullUselessNeurons();
     });
 
     it('culls empty neurons', () => {
       expect(indiv.nodes.has(1)).toBeFalsy();
-      expect(indiv.nodes.has(8)).toBeFalsy();
-      expect(indiv.nodes.has(9)).toBeFalsy();
-      // culling N1 will leave N0 with no outputs
-      expect(indiv.nodes.has(0)).toBeFalsy();
-      // culling N9 will leave N3 with no outputs
+      expect(indiv.nodes.has(3)).toBeFalsy();
+      // culling N1 will leave N3 with no outputs
       expect(indiv.nodes.has(3)).toBeFalsy();
     });
 
@@ -165,38 +176,37 @@ describe('Individual', () => {
       console.log(indiv.nnet.connections);
     });
 
-    it('has N3 (was N5) connected to A2', () => {
+    it('has neuron connections before action connections', () => {
+      const firstAction = indiv.nnet.connections.findIndex(
+        (con) => con.sinkType == Nodes.ACTION
+      );
+      expect(
+        indiv.nnet.connections
+          .slice(firstAction)
+          .find((con) => con.sinkType == Nodes.NEURON)
+      ).toBeUndefined();
+    });
+
+    it('has N0 (was N4) connected to A4', () => {
       expect(
         indiv.nnet.connections.some((con) => {
           return (
             con.sourceType == Nodes.NEURON &&
             con.sinkType == Nodes.ACTION &&
-            con.sourceIndex == 3 &&
-            con.sinkIndex == 2
+            con.sourceIndex == 0 &&
+            con.sinkIndex == 4
           );
         })
       ).toBeTruthy();
     });
-    it('has S13 connected to N1 (was N6)', () => {
+    it('has S2 connected to N1 (was N9)', () => {
       expect(
         indiv.nnet.connections.some((con) => {
           return (
             con.sourceType == Nodes.SENSOR &&
             con.sinkType == Nodes.NEURON &&
-            con.sourceIndex == 13 &&
+            con.sourceIndex == 2 &&
             con.sinkIndex == 1
-          );
-        })
-      ).toBeTruthy();
-    });
-    it('has S0 connected to A11', () => {
-      expect(
-        indiv.nnet.connections.some((con) => {
-          return (
-            con.sourceType == Nodes.SENSOR &&
-            con.sinkType == Nodes.ACTION &&
-            con.sourceIndex == 0 &&
-            con.sinkIndex == 11
           );
         })
       ).toBeTruthy();
