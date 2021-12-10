@@ -1,17 +1,21 @@
 import { Gene } from './gene';
-import { Actions, Nodes } from './models';
+import { Individual } from './individual';
+import { Actions, Nodes, SimState } from './models';
 import { Neuron } from './neuron';
+import { getSensor } from './sensorUtils';
 
 export class NeuralNet {
   connections: Gene[];
   neurons: Neuron[];
+  indiv: Individual;
 
-  constructor() {
+  constructor(indiv: Individual) {
+    this.indiv = indiv;
     this.connections = [];
     this.neurons = [];
   }
 
-  feedForward() {
+  feedForward(sim: SimState) {
     const actionAccumulators = new Array<number>(Actions.NUM_ACTIONS).fill(0);
     const neuronAccumulators = new Array<number>(this.neurons.length).fill(0);
 
@@ -30,7 +34,7 @@ export class NeuralNet {
 
       let inputVal;
       if (con.sourceType == Nodes.SENSOR) {
-        inputVal = 111; // getSensor(con.sourceIndex, simStep)
+        inputVal = getSensor(con.sourceIndex, this.indiv, sim);
       } else {
         inputVal = this.neurons[con.sourceIndex].output;
       }

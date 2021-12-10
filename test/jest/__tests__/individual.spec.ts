@@ -4,7 +4,7 @@ import { Coord } from 'src/lib/coord';
 import { Genome } from 'src/lib/genome';
 import { Gene } from 'src/lib/gene';
 import { Actions, Nodes, Sensors } from 'src/lib/models';
-import { params } from 'src/lib/utils';
+import { params } from 'src/lib/params';
 
 describe('Individual', () => {
   let indiv: Individual;

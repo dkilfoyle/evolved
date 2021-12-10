@@ -1,3 +1,8 @@
+import { Grid } from './grid';
+import { Individual } from './individual';
+import { Peeps } from './peeps';
+import { Signals } from './signals';
+
 export enum Nodes {
   NEURON = 0,
   SENSOR = 1,
@@ -55,4 +60,24 @@ export interface Node {
   numOutputs: number;
   numSelfInputs: number;
   numInputsFromSensorsOrOtherNeurons: number;
+}
+
+export enum Compass {
+  SW = 0,
+  S,
+  SE,
+  W,
+  CENTER,
+  E,
+  NW,
+  N,
+  NE,
+}
+
+export interface SimState {
+  peeps: Peeps;
+  // indiv: Individual;
+  simStep: number;
+  grid: Grid;
+  signals: Signals;
 }

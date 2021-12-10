@@ -1,6 +1,6 @@
 import { Peeps } from '../../../src/lib/peeps';
 import { describe, expect, it, beforeAll } from '@jest/globals';
-import { params } from 'src/lib/utils';
+import { params } from 'src/lib/params';
 
 describe('Peeps', () => {
   let peeps: Peeps;
@@ -16,6 +16,6 @@ describe('Peeps', () => {
     childGenome.applyPointMutations();
     // console.log(childGenome);
     expect(childGenome).toBeDefined();
-    expect(childGenome.genes.length).toEqual(params.genomeLength);
+    expect(childGenome.genes.length).toEqual(params.genomeMaxLength);
   });
 });

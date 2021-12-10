@@ -79,4 +79,20 @@ export class Gene {
         throw new Error();
     }
   }
+
+  similarity(other: Gene) {
+    const bitCount = (n: number) => {
+      n = n - ((n >> 1) & 0x55555555);
+      n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
+      return (((n + (n >> 4)) & 0xf0f0f0f) * 0x1010101) >> 24;
+    };
+    return (
+      (bitCount(this.sourceIndex ^ other.sourceIndex) +
+        bitCount(this.sourceType ^ other.sourceType) +
+        bitCount(this.sinkIndex ^ other.sinkIndex) +
+        bitCount(this.sinkType ^ other.sinkType) +
+        bitCount(this.weightInt ^ other.weightInt)) /
+      34 // index = 8 bits * 2, weight = 16, type = 1*2
+    );
+  }
 }

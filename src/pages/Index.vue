@@ -1,49 +1,44 @@
 <template>
-  <q-page class="row items-center justify-evenly">
-    <example-component
-      title="Example component"
-      active
-      :todos="todos"
-      :meta="meta"
-    ></example-component>
-  </q-page>
+  <div id="grid"></div>
 </template>
 
-<script lang="ts">
-import { Todo, Meta } from 'components/models';
-import ExampleComponent from 'components/CompositionComponent.vue';
-import { defineComponent, ref } from 'vue';
+<script setup lang="ts">
 
-export default defineComponent({
-  name: 'PageIndex',
-  components: { ExampleComponent },
-  setup() {
-    const todos = ref<Todo[]>([
-      {
-        id: 1,
-        content: 'ct1'
-      },
-      {
-        id: 2,
-        content: 'ct2'
-      },
-      {
-        id: 3,
-        content: 'ct3'
-      },
-      {
-        id: 4,
-        content: 'ct4'
-      },
-      {
-        id: 5,
-        content: 'ct5'
-      }
-    ]);
-    const meta = ref<Meta>({
-      totalCount: 1200
-    });
-    return { todos, meta };
-  }
-});
+import { ref, onMounted } from 'vue';
+import * as d3 from 'd3';
+import { Simulator } from 'src/lib/simulator';
+
+onMounted(() => {
+
+  const sim = new Simulator();
+  sim.grid.init();
+  sim.peeps.init(); // make individuals of size population
+  sim.peeps.initializeGeneration0(sim.grid); // make random genome for each individual
+
+  var svg = d3.select('#grid')
+    .append('svg')
+    .attr('width', 500)
+    .attr('height', 500);
+
+  const mydata = [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10], [11, 12, 13, 14, 15]]
+
+  svg.selectAll('g')
+    .data(mydata)
+
+    // each row
+    .enter().append('g')
+    .attr('transform', (d, i) => { return `translate(${i * 10})` })
+
+    // each col
+    .selectAll('circle')
+    .data((d) => { console.log(d); return d })
+    .enter().append('circle')
+    .attr('r', 5)
+    .attr('cx', 5)
+    .attr('cy', (d, i) => (5 + i) * 10)
+    .attr('fill', 'red')
+
+})
+
+
 </script>

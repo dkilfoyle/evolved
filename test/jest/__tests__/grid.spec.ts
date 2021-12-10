@@ -4,7 +4,7 @@ import { describe, expect, it, beforeAll } from '@jest/globals';
 describe('Grid', () => {
   let grid: Grid;
   beforeAll(() => {
-    grid = new Grid(5, 10);
+    grid = new Grid();
   });
   it('is correct size', () => {
     expect(grid.data.length).toEqual(5);

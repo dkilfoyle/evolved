@@ -1,4 +1,4 @@
-import { Coord } from './coord';
+import { Coord, Dir } from './coord';
 import { Gene } from './gene';
 import { Genome } from './genome';
 import { Nodes, Node } from './models';
@@ -11,11 +11,15 @@ export class Individual {
   index: number;
   loc: Coord;
   birthLoc: Coord;
+  lastMoveDir: Dir;
   age: number;
   genome: Genome;
   nnet: NeuralNet;
   connections: Gene[];
   nodes: Map<number, Node>;
+  oscPeriod = 34;
+  longProbeDist = params.longProbeDistance;
+  responsiveness = 0.5;
 
   constructor(index: number, loc: Coord, genome: Genome) {
     this.index = index;
@@ -23,8 +27,9 @@ export class Individual {
     this.genome = genome;
     this.alive = true;
     this.birthLoc = loc;
+    this.lastMoveDir = Dir.random8();
     this.age = 0;
-    this.nnet = new NeuralNet();
+    this.nnet = new NeuralNet(this);
     this.connections = [];
     this.nodes = new Map<number, Node>();
     // this.createWiringFromGenome();
