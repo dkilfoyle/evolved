@@ -3,7 +3,6 @@ import { Grid } from './grid';
 import { Individual } from './individual';
 import { Compass, Sensors, SimState } from './models';
 import { params } from './params';
-import { Peeps } from './peeps';
 import { Signals } from './signals';
 
 export function getPopulationDensityAlongAxis(
@@ -21,7 +20,7 @@ export function getPopulationDensityAlongAxis(
   // midrange if the population density is greatest in the reverse direction,
   // above midrange if density is greatest in forward direction.
 
-  if (dir.dir9 == Compass.CENTER) throw new Error(); // require a defined axis
+  if (dir.dir9 == Compass.CENTER) return 0; //throw new Error(); // require a defined axis
 
   let sum = 0.0;
   const dirVec = dir.asNormalizedCoord();
@@ -30,10 +29,11 @@ export function getPopulationDensityAlongAxis(
   const dirVecY = dirVec.y / len; // Unit vector components along dir
 
   const f = (tloc: Coord) => {
-    if (tloc != loc && grid.isOccupiedAt(tloc)) {
+    if (!tloc.isEqual(loc) && grid.isOccupiedAt(tloc)) {
       const offset = tloc.sub(loc);
       const proj = dirVecX * offset.x + dirVecY * offset.y; // Magnitude of projection along dir
       const contrib = proj / (offset.x * offset.x + offset.y * offset.y);
+      if (isNaN(contrib)) debugger;
       sum += contrib;
     }
   };
@@ -127,7 +127,7 @@ export function getSignalDensityAlongAxis(
   // so signal densities along borders and in corners are commonly sparser than
   // away from borders.
 
-  if (!(dir.dir9 != Compass.CENTER)) throw new Error(); // require a defined axis
+  if (!(dir.dir9 != Compass.CENTER)) return 0; //throw new Error(); // require a defined axis
 
   let sum = 0.0;
   const dirVec = dir.asNormalizedCoord();
@@ -136,7 +136,7 @@ export function getSignalDensityAlongAxis(
   const dirVecY = dirVec.y / len; // Unit vector components along dir
 
   const f = (tloc: Coord) => {
-    if (tloc != loc) {
+    if (!tloc.isEqual(loc)) {
       const offset = tloc.sub(loc);
       const proj = dirVecX * offset.x + dirVecY * offset.y; // Magnitude of projection along dir
       const contrib =

@@ -30,6 +30,10 @@ export class Coord {
     return new Coord(this.x - loc.x, this.y - loc.y);
   }
 
+  isEqual(loc: Coord) {
+    return this.x == loc.x && this.y == loc.y;
+  }
+
   asDir() {
     if (this.x == 0 && this.y == 0) return new Dir(Compass.CENTER);
     const TWO_PI = 3.1415927 * 2.0;
@@ -75,10 +79,10 @@ export class Dir {
     this.dir9 = dir;
   }
   asNormalizedCoord() {
-    return new Coord((this.dir9 % 3) - 1, this.dir9 / 3 - 1);
+    return new Coord((this.dir9 % 3) - 1, Math.floor(this.dir9 / 3 - 1));
   }
   static random8() {
-    return new Dir(getRandomInt(0, 8));
+    return new Dir(Compass.N).rotate(getRandomInt(0, 7));
   }
 
   rotate(n: number) {
@@ -114,16 +118,16 @@ export function visitNeighborhood(
   f: (x: Coord) => void
 ) {
   for (
-    let dx = -Math.min(radius, loc.x);
-    dx <= Math.min(radius, params.sizeX - loc.x - 1);
+    let dx = -Math.floor(Math.min(radius, loc.x));
+    dx <= Math.floor(Math.min(radius, params.sizeX - loc.x - 1));
     ++dx
   ) {
     const x = loc.x + dx;
     // assert(x >= 0 && x < p.sizeX);
     const extentY = Math.sqrt(radius * radius - dx * dx);
     for (
-      let dy = -Math.min(extentY, loc.y);
-      dy <= Math.min(extentY, params.sizeY - loc.y - 1);
+      let dy = -Math.floor(Math.min(extentY, loc.y));
+      dy <= Math.floor(Math.min(extentY, params.sizeY - loc.y - 1));
       ++dy
     ) {
       const y = loc.y + dy;

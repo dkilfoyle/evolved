@@ -218,6 +218,7 @@ export function executeActions(
 
   // Generate a normalized movement offset, where each component is -1, 0, or 1
   const movementOffset = new Coord(probX * signumX, probY * signumY);
+  // console.log(movementOffset);
 
   // Move there if it's a valid location
   const newLoc = indiv.loc.add(movementOffset);

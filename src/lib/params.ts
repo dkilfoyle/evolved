@@ -42,3 +42,9 @@ export const params = {
   initialNeuronOutput: 0.5,
 };
 params.maxNumberNeurons = params.genomeMaxLength / 2;
+
+params.sizeX = 32;
+params.sizeY = 32;
+params.population = 10;
+params.stepsPerGeneration = 10;
+params.maxGenerations = 10;

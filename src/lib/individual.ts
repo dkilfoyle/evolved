@@ -5,6 +5,7 @@ import { Nodes, Node } from './models';
 import { NeuralNet } from './neuralnet';
 import { Neuron } from './neuron';
 import { params } from './params';
+import { Synapse } from './synapse';
 
 export class Individual {
   alive: boolean;
@@ -32,7 +33,7 @@ export class Individual {
     this.nnet = new NeuralNet(this);
     this.connections = [];
     this.nodes = new Map<number, Node>();
-    // this.createWiringFromGenome();
+    this.createWiringFromGenome();
   }
 
   makeConnectionList() {
@@ -121,7 +122,7 @@ export class Individual {
     for (const con of this.connections) {
       if (con.sinkType == Nodes.NEURON) {
         this.nnet.connections.push(
-          new Gene(
+          new Synapse(
             con.sourceType,
             con.sourceType == Nodes.NEURON
               ? this.nodes.get(con.sourceIndex)?.remappedNumber
@@ -139,7 +140,7 @@ export class Individual {
     for (const con of this.connections) {
       if (con.sinkType == Nodes.ACTION) {
         this.nnet.connections.push(
-          new Gene(
+          new Synapse(
             con.sourceType,
             con.sourceType == Nodes.NEURON
               ? this.nodes.get(con.sourceIndex)?.remappedNumber

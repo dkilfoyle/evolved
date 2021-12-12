@@ -1,11 +1,11 @@
-import { Gene } from './gene';
 import { Individual } from './individual';
 import { Actions, Nodes, SimState } from './models';
 import { Neuron } from './neuron';
 import { getSensor } from './sensorUtils';
+import { Synapse } from './synapse';
 
 export class NeuralNet {
-  connections: Gene[];
+  connections: Synapse[];
   neurons: Neuron[];
   indiv: Individual;
 

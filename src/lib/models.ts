@@ -78,6 +78,7 @@ export interface SimState {
   peeps: Peeps;
   // indiv: Individual;
   simStep: number;
+  generation: number;
   grid: Grid;
   signals: Signals;
 }

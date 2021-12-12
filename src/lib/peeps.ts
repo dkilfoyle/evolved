@@ -3,6 +3,7 @@ import { Gene } from './gene';
 import { Genome } from './genome';
 import { Grid } from './grid';
 import { Individual } from './individual';
+import { Compass } from './models';
 import { params } from './params';
 import { getRandomInt } from './utils';
 
@@ -25,6 +26,7 @@ export class Peeps {
     this.individuals.forEach((indiv) => {
       indiv.loc = grid.findEmptyLocation();
       indiv.genome.makeRandom();
+      grid.set(indiv.loc, indiv.index);
     });
   }
 
@@ -60,6 +62,7 @@ export class Peeps {
     this.moveQueue.forEach((move) => {
       const { indiv, newloc } = move;
       const moveDir = newloc.sub(indiv.loc).asDir();
+      // if (moveDir.dir9 == Compass.CENTER) debugger;
       if (grid.isEmptyAt(newloc)) {
         grid.set(indiv.loc, 0);
         grid.set(move.newloc, indiv.index);
