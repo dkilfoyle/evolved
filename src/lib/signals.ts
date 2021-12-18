@@ -1,5 +1,4 @@
 import { Coord, visitNeighborhood } from './coord';
-import { Grid } from './grid';
 import { SimState } from './models';
 import { params } from './params';
 
@@ -17,16 +16,16 @@ export class Signals {
   static SIGNAL_MAX = 0xff;
   layers: Layer[] = [];
 
-  constructor(numLayers: number, sizeX: number, sizeY: number) {
-    this.init(numLayers, sizeX, sizeY);
+  constructor() {
+    this.init();
   }
   getMagnitude(layerNum: number, loc: Coord) {
     return this.layers[layerNum].data[loc.x][loc.y];
   }
-  init(numLayers: number, sizeX: number, sizeY: number) {
+  init() {
     this.layers = Array.from(
-      { length: numLayers },
-      () => new Layer(sizeX, sizeY)
+      { length: params.numLayers },
+      () => new Layer(params.sizeX, params.sizeY)
     );
   }
   get(layerNum: number, loc: Coord) {
