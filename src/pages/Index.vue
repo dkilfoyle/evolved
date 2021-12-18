@@ -15,7 +15,7 @@
                   round
                   color="secondary"
                   size="sm"
-                  @click="simWorker.postMessage('stepSim')"
+                  @click="simWorker.postMessage({ msg: 'stepSim' })"
                 ></q-btn>
                 <q-slider
                   v-model="simStep"
@@ -28,7 +28,7 @@
                   round
                   color="secondary"
                   size="sm"
-                  @click="simWorker.postMessage('runSim')"
+                  @click="simWorker.postMessage({ msg: 'runSim' })"
                 ></q-btn>
               </div>
               <div class="row q-gutter-sm items-center">
@@ -38,7 +38,7 @@
                   round
                   color="secondary"
                   size="sm"
-                  @click="simWorker.postMessage('stepGeneration')"
+                  @click="simWorker.postMessage({ msg: 'stepGeneration' })"
                 ></q-btn>
                 <q-slider
                   v-model="generation"
@@ -51,36 +51,55 @@
                   round
                   color="secondary"
                   size="sm"
-                  @click="simWorker.postMessage('runGeneration')"
+                  @click="simWorker.postMessage({ msg: 'runGeneration' })"
                 ></q-btn>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="col">nnet here</div>
+      <div class="col">{{ selectedIndividual.index }}</div>
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, reactive } from 'vue';
 import * as d3 from 'd3';
 import { SimState } from 'src/lib/models';
 import { params } from 'src/lib/params'
+import { simWorker } from 'src/lib/worker';
+import { Individual } from 'src/lib/individual';
 
 let svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
-const simWorker = new Worker(new URL('src/lib/simulator', import.meta.url))
+
 const simStep = ref(0);
 const generation = ref(0);
+const selectedIndividual = ref({});
 
-simWorker.onmessage = (msg) => {
-  console.log('Index.vue simWorker.onmessage', msg)
-  const simState = msg.data as SimState;
-  simStep.value = simState.simStep;
-  generation.value = simState.generation;
-  drawGrid(simState);
+simWorker.onmessage = (msg: MessageEvent) => {
+  console.log('Index.vue simWorker.onmessage', msg.data)
+  const e = msg.data as { msg: string; payload: unknown };
+  switch (e.msg) {
+    case 'simState':
+      const simState = e.payload as SimState;
+      simStep.value = simState.simStep;
+      generation.value = simState.generation;
+      drawGrid(simState);
+      break;
+    default:
+      throw new Error();
+  }
 }
+
+onMounted(() => {
+  svg = d3.select('#grid')
+    .append('svg')
+    .attr('width', 500)
+    .attr('height', 500);
+  simWorker.postMessage({ msg: 'setParam', payload: { param: 'stepsPerGeneration', value: 15 } })
+  simWorker.postMessage({ msg: 'init' })
+})
 
 // prettier-ignore
 const drawGrid = (sim: SimState) => {
@@ -96,31 +115,39 @@ const drawGrid = (sim: SimState) => {
 
   cols
     .join(enter =>
-      enter.append('rect').attr('width', 10).attr('height', 10).attr('fill', 'lightgrey').attr('y', (d, i) => i * 11)
+      enter.append('rect')
+        .attr('width', 10)
+        .attr('height', 10)
+        .attr('fill', 'lightgrey')
+        .attr('y', (d, i) => i * 11)
     )
-  cols
+
+  const cell = svg.selectAll('circle')
+    .data(sim.peeps.individuals)
     .join(
       enter => enter
         .append('circle')
         .attr('r', 3)
-        .attr('cx', 5)
-        .attr('cy', (d, i) => (i) * 11 + 5),
-      update => update.attr('fill', d => d == 0 ? 'lightgrey' : 'red')
+        .attr('fill', 'blue')
+        .on('click', function (e, d) {
+          svg.select('.selected').classed('selected', false).attr('r', 3);
+          d3.select(this).classed('selected', true).attr('r', 5);
+          selectedIndividual.value = d;
+        })
+      // .on('mouseout', function (d) { d3.select(this).attr('r', 3); selectedIndividual.value = {} })
     )
-    .attr('fill', (d) => d == 0 ? 'lightgrey' : 'red')
+    .attr('cx', (d, i) => (d.loc.x) * 11 + 5)
+    .attr('cy', (d, i) => (d.loc.y) * 11 + 5)
 }
 
-onMounted(() => {
-  svg = d3.select('#grid')
-    .append('svg')
-    .attr('width', 500)
-    .attr('height', 500);
-  simWorker.postMessage('init')
-})
 </script>
 
 <style>
 #grid {
   border: 1px solid black;
+}
+
+.selected {
+  fill: red;
 }
 </style>

@@ -6,8 +6,6 @@ export const params = {
   genomeInitialLengthMax: 16,
   genomeMaxLength: 20,
   maxNumberNeurons: -1,
-  logDir: './logs/',
-  imageDir: './images/',
   population: 100,
   stepsPerGeneration: 100,
   maxGenerations: 100,
@@ -40,6 +38,7 @@ export const params = {
   updateGraphLog: false,
   updateGraphLogStride: 16,
   initialNeuronOutput: 0.5,
+  numLayers: 1,
 };
 params.maxNumberNeurons = params.genomeMaxLength / 2;
 

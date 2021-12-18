@@ -40,6 +40,10 @@ export class NeuralNet {
       }
 
       if (con.sinkType == Nodes.ACTION) {
+        if (isNaN(inputVal)) {
+          debugger;
+          getSensor(con.sourceIndex, this.indiv, sim);
+        }
         actionAccumulators[con.sinkIndex] += inputVal * con.weight;
       } else {
         neuronAccumulators[con.sinkIndex] += inputVal * con.weight;

@@ -14,17 +14,18 @@ export class Simulator {
   constructor() {
     this.grid = new Grid();
     this.peeps = new Peeps();
-    this.signals = new Signals(1, params.sizeX, params.sizeY);
+    this.signals = new Signals();
   }
 
   init() {
     this.grid.init();
+    this.signals.init();
     this.peeps.init(); // make individuals of size population
     this.peeps.initializeGeneration0(this.grid); // make random genome for each individual
     this.simStep = 0;
     this.generation = 0;
     console.log('Simulator.init', this.getSimState());
-    self.postMessage(this.getSimState());
+    self.postMessage({ msg: 'simState', payload: this.getSimState() });
   }
 
   getSimState() {
@@ -39,6 +40,7 @@ export class Simulator {
 
   stepSimulation() {
     console.log('Simulator.stepSimulation', this.simStep);
+    if (this.simStep > params.stepsPerGeneration) return;
     const simState = this.getSimState();
     this.peeps.individuals.forEach((indiv) => {
       if (indiv.alive) {
@@ -49,7 +51,7 @@ export class Simulator {
     });
     this.peeps.drainMoveQueue(this.grid);
     this.signals.fade(0);
-    self.postMessage(this.getSimState());
+    self.postMessage({ msg: 'simState', payload: this.getSimState() });
     this.simStep++;
   }
 
@@ -75,7 +77,8 @@ export class Simulator {
           }
         });
         this.endOfSimStep(simStep, generation);
-        if (generation == 0) self.postMessage({ simState });
+        if (generation == 0)
+          self.postMessage({ msg: 'simState', payload: simState });
       }
       this.endOfGeneration(generation);
       this.peeps.spawnNewGeneration(this.grid);
@@ -95,10 +98,21 @@ export class Simulator {
 
 const simulator = new Simulator();
 
+interface Params {
+  sizeX: number;
+  sizeY: number;
+  population: number;
+  stepsPerGeneration: number;
+  maxGenerations: number;
+}
+
 self.onmessage = (msg) => {
-  switch (msg.data) {
+  const e = msg.data as { msg: string; payload: unknown };
+  console.log('recevied ', e);
+  switch (e.msg) {
     case 'init':
       simulator.init();
+      break;
     case 'stepSim':
       simulator.stepSimulation();
       break;
@@ -109,10 +123,18 @@ self.onmessage = (msg) => {
       break;
     case 'runGeneration':
       break;
+    case 'setParam':
+      const { param, value } = e.payload as { param: string; value: number };
+      params[param as keyof Params] = value;
+      break;
+    // case 'getParam':
+    //   const getParamData = e.payload as { param: string };
+    //   self.postMessage({
+    //     msg: 'getParam',
+    //     payload: params[getParamData.param as keyof Params],
+    //   });
+    //   break;
     default:
       throw new Error();
-  }
-  if (msg.data == 'simulate') {
-    simulator.simulate();
   }
 };
