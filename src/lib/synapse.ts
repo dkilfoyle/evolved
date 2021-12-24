@@ -20,4 +20,12 @@ export class Synapse {
     this.sinkIndex = sinkIndex;
     this.weight = weight;
   }
+
+  get type() {
+    if (this.sourceType == Nodes.SENSOR) {
+      return this.sinkType == Nodes.NEURON ? 'sensor2neuron' : 'sensor2action';
+    } else {
+      return this.sinkType == Nodes.NEURON ? 'neuron2neuron' : 'neuron2action';
+    }
+  }
 }

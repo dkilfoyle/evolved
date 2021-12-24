@@ -204,6 +204,14 @@ export function longProbeBarrierFwd(
   }
 }
 
+export function getSensorValuesForIndividual(indiv: Individual, sim: SimState) {
+  const res = new Array<number>();
+  for (let i = 0; i < Sensors.NUM_SENSES; i++) {
+    res.push(getSensor(i, indiv, sim));
+  }
+  return res;
+}
+
 export function getSensor(
   sensorNum: Sensors,
   indiv: Individual,
