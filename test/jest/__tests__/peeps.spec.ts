@@ -12,7 +12,15 @@ describe('Peeps', () => {
   });
 
   it('can make children', () => {
-    const childGenome = peeps.generateChildGenome();
+    const survivors = [
+      { index: 0, score: 1 },
+      { index: 1, score: 1 },
+      { index: 2, score: 1 },
+      { index: 3, score: 1 },
+      { index: 4, score: 1 },
+      { index: 5, score: 1 },
+    ];
+    const childGenome = peeps.generateChildGenome(survivors);
     childGenome.applyPointMutations();
     // console.log(childGenome);
     expect(childGenome).toBeDefined();

@@ -1,5 +1,6 @@
 import { Gene } from './gene';
 import { params } from './params';
+import { getRandomInt } from './utils';
 
 export class Genome {
   genes: Gene[];
@@ -15,6 +16,20 @@ export class Genome {
 
   makeRandom() {
     this.genes.forEach((gene) => gene.makeRandom());
+  }
+
+  randomInsertDeletion() {
+    if (Math.random() < params.geneInsertionDeletionRate)
+      if (Math.random() < params.deletionRatio) {
+        // deletion
+        if (this.genes.length > 1)
+          this.genes.splice(getRandomInt(0, this.genes.length - 1), 1);
+      } else {
+        // insertion
+        const newgene = new Gene();
+        newgene.makeRandom();
+        this.genes.push(newgene);
+      }
   }
 
   applyPointMutations() {

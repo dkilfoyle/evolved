@@ -1,7 +1,7 @@
 import { Coord, Dir } from './coord';
 import { Gene } from './gene';
 import { Genome } from './genome';
-import { Nodes, Node } from './models';
+import { Nodes, Node, Challenge } from './models';
 import { NeuralNet } from './neuralnet';
 import { Neuron } from './neuron';
 import { params } from './params';
@@ -21,6 +21,7 @@ export class Individual {
   oscPeriod = 34;
   longProbeDist = params.longProbeDistance;
   responsiveness = 0.5;
+  survivalScore = 0;
 
   constructor(index: number, loc: Coord, genome: Genome) {
     this.index = index;
@@ -162,6 +163,43 @@ export class Individual {
           node.numInputsFromSensorsOrOtherNeurons != 0
         )
       );
+    }
+  }
+
+  calculateSurvivalScore() {
+    if (!this.alive) {
+      this.survivalScore = 0;
+    }
+
+    switch (params.challenge) {
+      // Survivors are those inside the circular area defined by
+      // safeCenter and radius
+      case Challenge.CIRCLE:
+        const safeCenter = new Coord(params.sizeX / 4, params.sizeY / 4);
+        const radius = params.sizeX / 4.0;
+        const offset = safeCenter.sub(this.loc);
+        const distance = offset.length();
+        this.survivalScore =
+          distance <= radius ? (radius - distance) / radius : 0;
+        break;
+
+      // Survivors are all those on the right side of the arena
+      case Challenge.RIGHT_HALF:
+        this.survivalScore = this.loc.x > params.sizeX / 2 ? 1.0 : 0;
+        break;
+
+      // Survivors are all those on the right quarter of the arena
+      case Challenge.RIGHT_QUARTER:
+        this.survivalScore =
+          this.loc.x > params.sizeX / 2 + params.sizeX / 4 ? 1.0 : 0;
+        break;
+
+      // Survivors are all those on the left eighth of the arena
+      case Challenge.LEFT_EIGHTH:
+        this.survivalScore = this.loc.x < params.sizeX / 8 ? 1.0 : 0.0;
+
+      default:
+        throw new Error();
     }
   }
 }

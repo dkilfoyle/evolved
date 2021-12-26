@@ -39,8 +39,16 @@ export class Simulator {
   }
 
   stepSimulation() {
-    console.log('Simulator.stepSimulation', this.simStep);
-    if (this.simStep > params.stepsPerGeneration) return;
+    console.log(
+      'Simulator.stepSimulation',
+      this.simStep,
+      params.stepsPerGeneration
+    );
+    if (this.simStep == params.stepsPerGeneration) {
+      this.endOfGeneration();
+      this.stepSimulation();
+      return;
+    }
     const simState = this.getSimState();
     this.peeps.individuals.forEach((indiv) => {
       if (indiv.alive) {
@@ -49,8 +57,15 @@ export class Simulator {
         executeActions(indiv, actionLevels, simState);
       }
     });
+    this.peeps.drainDeathQueue(this.grid);
     this.peeps.drainMoveQueue(this.grid);
     this.signals.fade(0);
+
+    if (this.simStep == params.stepsPerGeneration - 1) {
+      // this is the last step of this generation
+      this.peeps.calculateSurvival();
+    }
+
     self.postMessage({ msg: 'simState', payload: this.getSimState() });
     this.simStep++;
   }
@@ -62,37 +77,19 @@ export class Simulator {
   simulate() {
     this.init();
 
-    let generation = 0;
-    // while (generation < params.maxGenerations) {
-    while (generation < 1) {
-      console.log('generation ', generation);
+    while (this.generation < params.maxGenerations) {
+      console.log('generation ', this.generation);
       for (let simStep = 0; simStep < params.stepsPerGeneration; simStep++) {
-        console.log(' -- simstep: ', simStep);
-        const simState = this.getSimState();
-        this.peeps.individuals.forEach((indiv) => {
-          if (indiv.alive) {
-            indiv.age++;
-            const actionLevels = indiv.nnet.feedForward(simState);
-            executeActions(indiv, actionLevels, simState);
-          }
-        });
-        this.endOfSimStep(simStep, generation);
-        if (generation == 0)
-          self.postMessage({ msg: 'simState', payload: simState });
+        this.stepSimulation();
       }
-      this.endOfGeneration(generation);
-      this.peeps.spawnNewGeneration(this.grid);
-      generation++;
+      this.endOfGeneration();
     }
   }
 
-  endOfSimStep(simStep: number, generation: number) {
-    // TODO: ?challenges
-    // TODO: produce image
-  }
-
-  endOfGeneration(generation: number) {
-    // throw new Error();
+  endOfGeneration() {
+    this.peeps.spawnNewGeneration(this.grid);
+    this.simStep = 0;
+    this.generation++;
   }
 }
 

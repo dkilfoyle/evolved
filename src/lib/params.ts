@@ -1,7 +1,9 @@
+import { Challenge } from './models';
+
 export const params = {
   sizeX: 128,
   sizeY: 128,
-  challenge: 0,
+  challenge: Challenge.RIGHT_HALF,
   genomeInitialLengthMin: 16,
   genomeInitialLengthMax: 16,
   genomeMaxLength: 20,

@@ -18,17 +18,17 @@
     "concurrently:dev:jest": "concurrently \"quasar dev\" \"jest --watch\""
   },
   "dependencies": {
-    "@quasar/extras": "^1.0.0",
+    "@quasar/extras": "^1.12.2",
     "core-js": "^3.6.5",
     "d3": "^7.2.0",
     "d3-color": "^3.0.1",
-    "quasar": "^2.0.0"
+    "quasar": "^2.4.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
-    "@quasar/app": "^3.0.0",
+    "@quasar/app": "^3.2.5",
     "@quasar/quasar-app-extension-testing": "^2.0.1",
-    "@quasar/quasar-app-extension-testing-unit-jest": "^3.0.0-alpha.6",
+    "@quasar/quasar-app-extension-testing-unit-jest": "^3.0.0-alpha.7",
     "@types/d3": "^7.1.0",
     "@types/node": "^12.20.21",
     "@typescript-eslint/eslint-plugin": "^4.16.1",
