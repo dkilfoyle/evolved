@@ -70,9 +70,12 @@ export class Simulator {
       self.postMessage({ msg: 'simState', payload: this.getSimState() });
   }
 
-  runSimulation(postStepInfo = false, postGenerationInfo = true) {
+  runSimulation(postStepInfo = true, postGenerationInfo = true) {
     while (this.simStep < params.stepsPerGeneration)
-      this.stepSimulation(postStepInfo, postGenerationInfo);
+      this.stepSimulation(
+        postStepInfo && this.simStep % params.displayPerSteps == 0,
+        postGenerationInfo
+      );
     if (postGenerationInfo)
       self.postMessage({ msg: 'simState', payload: this.getSimState() });
   }
@@ -82,12 +85,15 @@ export class Simulator {
     if (this.simStep == params.stepsPerGeneration) {
       this.endOfGeneration(postGenerationInfo);
     }
-    this.runSimulation(postStepInfo, postGenerationInfo);
+    this.runSimulation(
+      postStepInfo,
+      postGenerationInfo && this.generation % params.displayPerGenerations == 0
+    );
   }
 
   runGeneration() {
     while (this.generation < params.maxGenerations) {
-      this.stepGeneration(false, false);
+      this.stepGeneration(false, true);
     }
     self.postMessage({ msg: 'simState', payload: this.getSimState() });
   }

@@ -1,5 +1,37 @@
 import { Challenge } from './models';
 
+/*
+Simulation
+
+sizeX
+sizeY
+population
+maxGenerations
+stepsPerGeneration
+challenge
+
+Display
+perSteps
+perGeneration
+
+Genetics
+genomeMaxLength
+pointMutationRate
+geneInsertionalDeletionRate
+sexualReproduction
+chooseParentsByFitness
+
+Senses
+populationSensorRadius
+signalSensorRadius
+longProbeDistance
+shortProbeBarrierDistance
+
+
+
+
+*/
+
 export const params = {
   sizeX: 128,
   sizeY: 128,
@@ -41,6 +73,8 @@ export const params = {
   updateGraphLogStride: 16,
   initialNeuronOutput: 0.5,
   numLayers: 1,
+  displayPerSteps: 10,
+  displayPerGenerations: 10,
 };
 params.maxNumberNeurons = params.genomeMaxLength / 2;
 
