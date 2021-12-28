@@ -22,6 +22,15 @@ export class Coord {
   //   return new Dir(end.x - this.x, end.y - this.y);
   // }
 
+  clone() {
+    return new Coord(this.x, this.y);
+  }
+
+  set(loc: Coord) {
+    this.x = loc.x;
+    this.y = loc.y;
+  }
+
   add(loc: Coord) {
     return new Coord(this.x + loc.x, this.y + loc.y);
   }
@@ -34,50 +43,130 @@ export class Coord {
     return this.x == loc.x && this.y == loc.y;
   }
 
+  isZeroLength() {
+    return this.x == 0 && this.y == 0;
+  }
+
   asDir() {
-    if (this.x == 0 && this.y == 0) return new Dir(Compass.CENTER);
-    const TWO_PI = 3.1415927 * 2.0;
-    let angle = Math.atan2(this.y, this.x);
+    // tanN/tanD is the best rational approximation to tan(22.5) under the constraint that
+    // tanN + tanD < 2**16 (to avoid overflows). We don't care about the scale of the result,
+    // only the ratio of the terms. The actual rotation is (22.5 - 1.5e-8) degrees, whilst
+    // the closest a pair of int16_t's come to any of these lines is 8e-8 degrees, so the result is exact
+    const tanN = 13860;
+    const tanD = 33461;
+    const conversion = [S, C, SW, N, SE, E, N, N, N, N, W, NW, N, NE, N, N];
 
-    if (angle < 0.0) {
-      angle = 3.1415927 + (3.1415927 + angle);
-    }
-    //assert(angle >= 0.0 && angle <= TWO_PI);
+    const xp = this.x * tanD + this.y * tanN;
+    const yp = this.y * tanD - this.x * tanN;
 
-    angle += TWO_PI / 16.0; // offset by half a slice
-    if (angle > TWO_PI) {
-      angle -= TWO_PI;
-    }
-    const slice = angle / (TWO_PI / 8.0); // find which division it's in
-    /*
-        We have to convert slice values:
-            3  2  1
-            4     0
-            5  6  7
-        into Dir8Compass value:
-            6  7  8
-            3  4  5
-            0  1  2
-    */
-    const dirconversion = [
-      Compass.E,
-      Compass.NE,
-      Compass.N,
-      Compass.NW,
-      Compass.W,
-      Compass.SW,
-      Compass.S,
-      Compass.SE,
-    ];
-    return new Dir(dirconversion[slice]);
+    // We can easily check which side of the four boundary lines
+    // the point now falls on, giving 16 cases, though only 9 are
+    // possible.
+    return new Dir(
+      conversion[+(yp > 0) * 8 + +(xp > 0) * 4 + +(yp > xp) * 2 + +(yp >= -xp)]
+    );
   }
 }
+
+const N = Compass.N;
+const NE = Compass.NE;
+const E = Compass.E;
+const SE = Compass.SE;
+const S = Compass.S;
+const SW = Compass.SW;
+const W = Compass.W;
+const NW = Compass.NW;
+const C = Compass.CENTER;
+
+const rotations = [
+  SW,
+  W,
+  NW,
+  N,
+  NE,
+  E,
+  SE,
+  S,
+  S,
+  SW,
+  W,
+  NW,
+  N,
+  NE,
+  E,
+  SE,
+  SE,
+  S,
+  SW,
+  W,
+  NW,
+  N,
+  NE,
+  E,
+  W,
+  NW,
+  N,
+  NE,
+  E,
+  SE,
+  S,
+  SW,
+  C,
+  C,
+  C,
+  C,
+  C,
+  C,
+  C,
+  C,
+  E,
+  SE,
+  S,
+  SW,
+  W,
+  NW,
+  N,
+  NE,
+  NW,
+  N,
+  NE,
+  E,
+  SE,
+  S,
+  SW,
+  W,
+  N,
+  NE,
+  E,
+  SE,
+  S,
+  SW,
+  W,
+  NW,
+  NE,
+  E,
+  SE,
+  S,
+  SW,
+  W,
+  NW,
+  N,
+];
 
 export class Dir {
   dir9: Compass;
   constructor(dir: Compass = Compass.CENTER) {
     this.dir9 = dir;
   }
+
+  clone() {
+    return new Dir(this.dir9);
+  }
+
+  set(dir: Dir) {
+    this.dir9 = dir.dir9;
+  }
+
   asNormalizedCoord() {
     return new Coord((this.dir9 % 3) - 1, Math.floor(this.dir9 / 3 - 1));
   }
@@ -86,21 +175,9 @@ export class Dir {
   }
 
   rotate(n: number) {
-    const rotateRight = [3, 0, 1, 6, 4, 2, 7, 8, 5];
-    const rotateLeft = [1, 2, 5, 0, 4, 8, 3, 6, 7];
-
-    let n9 = this.dir9;
-    if (n < 0) {
-      while (n++ < 0) {
-        n9 = rotateLeft[n9];
-      }
-    } else if (n > 0) {
-      while (n-- > 0) {
-        n9 = rotateRight[n9];
-      }
-    }
-    return new Dir(n9);
+    return new Dir(rotations[this.dir9 * 8 + (n & 7)]);
   }
+
   rotate90DegCW() {
     return this.rotate(2);
   }

@@ -1,5 +1,4 @@
 import { Grid } from './grid';
-import { Individual } from './individual';
 import { Peeps } from './peeps';
 import { Signals } from './signals';
 

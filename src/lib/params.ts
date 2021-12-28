@@ -44,8 +44,8 @@ export const params = {
 };
 params.maxNumberNeurons = params.genomeMaxLength / 2;
 
-params.sizeX = 32;
-params.sizeY = 32;
-params.population = 10;
-params.stepsPerGeneration = 10;
-params.maxGenerations = 10;
+params.sizeX = 64;
+params.sizeY = 64;
+params.population = 50;
+params.stepsPerGeneration = 100;
+params.maxGenerations = 50;

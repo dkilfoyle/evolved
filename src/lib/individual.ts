@@ -28,7 +28,7 @@ export class Individual {
     this.loc = loc;
     this.genome = genome;
     this.alive = true;
-    this.birthLoc = loc;
+    this.birthLoc = loc.clone();
     this.lastMoveDir = Dir.random8();
     this.age = 0;
     this.nnet = new NeuralNet(this);
@@ -113,7 +113,7 @@ export class Individual {
     this.cullUselessNeurons();
 
     let newNumber = 0;
-    for (const [index, node] of this.nodes) {
+    for (const [, node] of this.nodes) {
       node.remappedNumber = newNumber++;
     }
 
@@ -156,7 +156,7 @@ export class Individual {
 
     // create neurons
     this.nnet.neurons = [];
-    for (const [index, node] of this.nodes) {
+    for (const [, node] of this.nodes) {
       this.nnet.neurons.push(
         new Neuron(
           params.initialNeuronOutput,
@@ -185,7 +185,8 @@ export class Individual {
 
       // Survivors are all those on the right side of the arena
       case Challenge.RIGHT_HALF:
-        this.survivalScore = this.loc.x > params.sizeX / 2 ? 1.0 : 0;
+        const xdiff = this.loc.x - this.birthLoc.x;
+        this.survivalScore = xdiff > 10 ? xdiff : 0;
         break;
 
       // Survivors are all those on the right quarter of the arena

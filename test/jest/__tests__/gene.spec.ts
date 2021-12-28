@@ -27,9 +27,7 @@ describe('Gene', () => {
     beforeAll(() => {
       gene = new Gene();
       gene.makeRandom();
-      console.log(gene);
       gene.applyPointMutation();
-      console.log(gene);
     });
     it('has valid source index', () => {
       expect(gene.sourceIndex).toBeLessThanOrEqual(gene.getMaxSourceIndex());

@@ -25,6 +25,8 @@ describe('Dir', () => {
     const x5 = new Dir(Compass.N).rotate(5);
     const x6 = new Dir(Compass.N).rotate(6);
     const x7 = new Dir(Compass.N).rotate(7);
+    const x8 = new Dir(Compass.N).rotate(8);
+    const x9 = new Dir(Compass.CENTER).rotate(3);
     expect(x0.dir9).toEqual(Compass.N);
     expect(x1.dir9).toEqual(Compass.NE);
     expect(x2.dir9).toEqual(Compass.E);
@@ -33,5 +35,7 @@ describe('Dir', () => {
     expect(x5.dir9).toEqual(Compass.SW);
     expect(x6.dir9).toEqual(Compass.W);
     expect(x7.dir9).toEqual(Compass.NW);
+    expect(x8.dir9).toEqual(Compass.N);
+    expect(x9.dir9).toEqual(Compass.CENTER);
   });
 });

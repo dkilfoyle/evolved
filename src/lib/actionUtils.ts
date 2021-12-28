@@ -220,9 +220,11 @@ export function executeActions(
   const movementOffset = new Coord(probX * signumX, probY * signumY);
   // console.log(movementOffset);
 
-  // Move there if it's a valid location
-  const newLoc = indiv.loc.add(movementOffset);
-  if (sim.grid.isInBounds(newLoc) && sim.grid.isEmptyAt(newLoc)) {
-    sim.peeps.queueForMove(indiv, newLoc);
+  if (movementOffset.isZeroLength() == false) {
+    // Move there if it's a valid location
+    const newLoc = indiv.loc.add(movementOffset);
+    if (sim.grid.isInBounds(newLoc) && sim.grid.isEmptyAt(newLoc)) {
+      sim.peeps.queueForMove(indiv, newLoc);
+    }
   }
 }

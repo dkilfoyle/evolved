@@ -20,11 +20,11 @@ export class Simulator {
   init() {
     this.grid.init();
     this.signals.init();
-    this.peeps.init(); // make individuals of size population
+    // this.peeps.init(); // make individuals of size population
     this.peeps.initializeGeneration0(this.grid); // make random genome for each individual
     this.simStep = 0;
     this.generation = 0;
-    console.log('Simulator.init', this.getSimState());
+    // console.log('Simulator.init', this.getSimState());
     self.postMessage({ msg: 'simState', payload: this.getSimState() });
   }
 
@@ -38,17 +38,17 @@ export class Simulator {
     };
   }
 
-  stepSimulation() {
-    console.log(
-      'Simulator.stepSimulation',
-      this.simStep,
-      params.stepsPerGeneration
-    );
-    if (this.simStep == params.stepsPerGeneration) {
-      this.endOfGeneration();
-      this.stepSimulation();
+  stepSimulation(postStepInfo = true, postGenerationInfo = true) {
+    this.simStep++;
+    // console.log(
+    //   'Simulator.stepSimulation',
+    //   this.simStep,
+    // );
+    if (this.simStep > params.stepsPerGeneration) {
+      this.endOfGeneration(postGenerationInfo);
       return;
     }
+
     const simState = this.getSimState();
     this.peeps.individuals.forEach((indiv) => {
       if (indiv.alive) {
@@ -61,24 +61,42 @@ export class Simulator {
     this.peeps.drainMoveQueue(this.grid);
     this.signals.fade(0);
 
-    if (this.simStep == params.stepsPerGeneration - 1) {
+    if (this.simStep == params.stepsPerGeneration) {
       // this is the last step of this generation
       this.peeps.calculateSurvival();
     }
 
-    self.postMessage({ msg: 'simState', payload: this.getSimState() });
-    this.simStep++;
+    if (postStepInfo)
+      self.postMessage({ msg: 'simState', payload: this.getSimState() });
   }
 
-  runSimulation() {
-    while (this.simStep < params.stepsPerGeneration) this.stepSimulation();
+  runSimulation(postStepInfo = false, postGenerationInfo = true) {
+    while (this.simStep < params.stepsPerGeneration)
+      this.stepSimulation(postStepInfo, postGenerationInfo);
+    if (postGenerationInfo)
+      self.postMessage({ msg: 'simState', payload: this.getSimState() });
+  }
+
+  stepGeneration(postStepInfo = false, postGenerationInfo = true) {
+    // console.log(this.simStep, params.stepsPerGeneration, this.generation);
+    if (this.simStep == params.stepsPerGeneration) {
+      this.endOfGeneration(postGenerationInfo);
+    }
+    this.runSimulation(postStepInfo, postGenerationInfo);
+  }
+
+  runGeneration() {
+    while (this.generation < params.maxGenerations) {
+      this.stepGeneration(false, false);
+    }
+    self.postMessage({ msg: 'simState', payload: this.getSimState() });
   }
 
   simulate() {
     this.init();
 
     while (this.generation < params.maxGenerations) {
-      console.log('generation ', this.generation);
+      // console.log('generation ', this.generation);
       for (let simStep = 0; simStep < params.stepsPerGeneration; simStep++) {
         this.stepSimulation();
       }
@@ -86,10 +104,13 @@ export class Simulator {
     }
   }
 
-  endOfGeneration() {
+  endOfGeneration(postGenerationInfo = true) {
+    this.grid.init(); // empty the grid
     this.peeps.spawnNewGeneration(this.grid);
     this.simStep = 0;
     this.generation++;
+    if (postGenerationInfo)
+      self.postMessage({ msg: 'simState', payload: this.getSimState() });
   }
 }
 
@@ -105,7 +126,7 @@ interface Params {
 
 self.onmessage = (msg) => {
   const e = msg.data as { msg: string; payload: unknown };
-  console.log('recevied ', e);
+  // console.log('recevied ', e);
   switch (e.msg) {
     case 'init':
       simulator.init();
@@ -117,8 +138,10 @@ self.onmessage = (msg) => {
       simulator.runSimulation();
       break;
     case 'stepGeneration':
+      simulator.stepGeneration();
       break;
     case 'runGeneration':
+      simulator.runGeneration();
       break;
     case 'setParam':
       const { param, value } = e.payload as { param: string; value: number };
