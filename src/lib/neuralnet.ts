@@ -57,6 +57,11 @@ export class NeuralNet {
         neuronAccumulators[con.sinkIndex] += inputVal * con.weight;
       }
     });
+
+    // console.log(
+    //   Math.min(...actionAccumulators),
+    //   Math.max(...actionAccumulators)
+    // );
     return actionAccumulators;
   }
 }

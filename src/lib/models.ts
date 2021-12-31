@@ -75,11 +75,22 @@ export enum Compass {
 
 export interface SimState {
   peeps: Peeps;
-  // indiv: Individual;
   simStep: number;
   generation: number;
   grid: Grid;
   signals: Signals;
+}
+
+export interface SimInfo {
+  peeps: Peeps;
+  simStep: number;
+  generation: number;
+  signals: Signals;
+}
+
+export interface InitState {
+  grid: Grid;
+  peeps: Peeps;
 }
 
 export enum Challenge {

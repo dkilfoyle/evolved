@@ -36,24 +36,29 @@ export const params = {
   sizeX: 128,
   sizeY: 128,
   challenge: Challenge.RIGHT_HALF,
+
   genomeInitialLengthMin: 16,
   genomeInitialLengthMax: 16,
-  genomeMaxLength: 20,
-  maxNumberNeurons: -1,
+  genomeMaxLength: 30,
+  maxNumberNeurons: 5,
+
   population: 100,
   stepsPerGeneration: 100,
   maxGenerations: 100,
+
   barrierType: 0,
   replaceBarrierType: 0,
   replaceBarrierTypeGenerationNumber: -1,
   numThreads: 1,
   signalLayers: 1,
+
   pointMutationRate: 0.0001,
   geneInsertionDeletionRate: 0.0001,
   deletionRatio: 0.7,
   killEnable: false,
   sexualReproduction: true,
   chooseParentsByFitness: true,
+
   populationSensorRadius: 2.0,
   signalSensorRadius: 1,
   responsiveness: 0.5,
@@ -76,7 +81,6 @@ export const params = {
   displayPerSteps: 10,
   displayPerGenerations: 10,
 };
-params.maxNumberNeurons = params.genomeMaxLength / 2;
 
 params.sizeX = 64;
 params.sizeY = 64;

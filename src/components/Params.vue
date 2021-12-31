@@ -7,20 +7,38 @@
     >
       <q-item>
         <q-item-section>
-          <div v-for="param in paramGroup.params" :key="param[0]">
-            <q-input
-              v-if="typeof paramsRef[param[0]] == 'number'"
-              v-model.number="paramsRef[param[0]]"
-              type="number"
-              dense
-            >
-              <template v-slot:before>
-                <div class="label">{{ param[0] }}</div>
-              </template>
-            </q-input>
-            <div v-if="typeof paramsRef[param[0]] == 'boolean'" class="row q-py-sm">
-              <div class="label">{{ param[0] }}</div>
-              <q-toggle v-model="paramsRef[param[0]]" dense></q-toggle>
+          <div
+            v-for="param in paramGroup.params"
+            :key="typeof param == 'string' ? param : param.name"
+          >
+            <div v-if="typeof param == 'string'">
+              <q-input
+                v-if="typeof paramsRef[param] == 'number'"
+                v-model.number="paramsRef[param]"
+                type="number"
+                dense
+              >
+                <template v-slot:before>
+                  <div class="label">{{ param }}</div>
+                </template>
+              </q-input>
+              <div v-if="typeof paramsRef[param] == 'boolean'" class="row q-py-sm">
+                <div class="label">{{ param }}</div>
+                <q-toggle v-model="paramsRef[param]" dense></q-toggle>
+              </div>
+            </div>
+            <div v-else>
+              <div v-if="param.type == 'select'" class="row items-center q-py-sm">
+                <div class="label">{{ param.name }}</div>
+                <q-select
+                  v-model="paramsRef[param.name]"
+                  :options="param.options"
+                  emit-value
+                  map-options
+                  dense
+                  class="col"
+                ></q-select>
+              </div>
             </div>
           </div>
         </q-item-section>
@@ -33,11 +51,14 @@
 import { reactive, watch } from 'vue'
 import { params } from 'src/lib/params'
 import { simWorker } from 'src/lib/worker';
+import { Challenge } from 'src/lib/models';
 
 // const stepsPerGeneration: WritableComputedRef<number> = computed({
 //   get(): number { return params.stepsPerGeneration; },
 //   set(newValue: number) { params.stepsPerGeneration = newValue; }
 // })
+
+const getEnumNames = (e: string[]) => e.filter(s => isNaN(Number(s))).map((x, i) => ({ label: x, value: i }))
 
 
 const paramsRef = reactive(params as Record<string, number | boolean>);
@@ -45,31 +66,37 @@ const paramGroups = [
   {
     name: 'Simulation',
     icon: 'apps',
-    params: [['sizeX', 'number'], ['sizeY', 'number'], ['population', 'number'], ['maxGenerations', 'number'], ['stepsPerGeneration', 'number']]
+    params: ['sizeX', 'sizeY', 'population', 'maxGenerations', 'stepsPerGeneration', {
+      name: 'challenge',
+      type: 'select',
+      options: getEnumNames(Object.keys(Challenge))
+    }]
   },
   {
     name: 'Display',
     icon: 'monitor',
-    params: [['displayPerSteps'], ['displayPerGenerations']]
+    params: ['displayPerSteps', 'displayPerGenerations']
   },
   {
     name: 'Genetics',
     icon: 'people',
     params: [
-      ['genomeMaxLength'],
-      ['pointMutationRate'],
-      ['geneInsertionDeletionRate'],
-      ['sexualReproduction'],
-      ['chooseParentsByFitness']]
+      'genomeInitialLengthMin',
+      'genomeInitialLengthMax',
+      'genomeMaxLength',
+      'pointMutationRate',
+      'geneInsertionDeletionRate',
+      'sexualReproduction',
+      'chooseParentsByFitness']
   },
   {
     name: 'Senses',
     icon: 'visibility',
     params: [
-      ['populationSensorRadius'],
-      ['signalSensorRadius'],
-      ['longProbeDistance'],
-      ['shortProbeBarrierDistance']]
+      'populationSensorRadius',
+      'signalSensorRadius',
+      'longProbeDistance',
+      'shortProbeBarrierDistance']
   }
 ];
 watch(() => ({ ...paramsRef }), (newval: Record<string, number | boolean>, oldval) => {

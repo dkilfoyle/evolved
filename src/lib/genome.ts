@@ -7,7 +7,15 @@ export class Genome {
 
   constructor() {
     this.genes = [];
-    for (let i = 0; i < params.genomeMaxLength; i++) {
+    for (
+      let i = 0;
+      i <
+      getRandomInt(
+        params.genomeInitialLengthMin,
+        params.genomeInitialLengthMax
+      );
+      i++
+    ) {
       const gene = new Gene();
       gene.makeRandom();
       this.genes.push(gene);
@@ -24,7 +32,7 @@ export class Genome {
         // deletion
         if (this.genes.length > 1)
           this.genes.splice(getRandomInt(0, this.genes.length - 1), 1);
-      } else {
+      } else if (this.genes.length < params.genomeMaxLength) {
         // insertion
         const newgene = new Gene();
         newgene.makeRandom();

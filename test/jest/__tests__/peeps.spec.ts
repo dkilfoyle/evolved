@@ -31,6 +31,11 @@ describe('Peeps', () => {
     childGenome.applyPointMutations();
     // console.log(childGenome);
     expect(childGenome).toBeDefined();
-    expect(childGenome.genes.length).toEqual(params.genomeMaxLength);
+    expect(childGenome.genes.length).toBeGreaterThanOrEqual(
+      params.genomeInitialLengthMin
+    );
+    expect(childGenome.genes.length).toBeLessThanOrEqual(
+      params.genomeInitialLengthMax
+    );
   });
 });

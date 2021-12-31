@@ -17,6 +17,8 @@ export class Peeps {
   individuals: Individual[] = [];
   moveQueue: { indiv: Individual; newloc: Coord }[] = [];
   deathQueue: Individual[] = [];
+  survivorCount = 0;
+  survivorsScore = 0;
 
   // init() {
   //   this.individuals = [];
@@ -30,6 +32,7 @@ export class Peeps {
 
   initializeGeneration0(grid: Grid) {
     this.individuals = [];
+
     for (let index = 0; index <= params.population; ++index) {
       const indiv = new Individual(
         index,
@@ -88,8 +91,12 @@ export class Peeps {
   }
 
   calculateSurvival() {
+    this.survivorCount = 0;
+    this.survivorsScore = 0;
     this.individuals.forEach((indiv) => {
       indiv.calculateSurvivalScore();
+      if (indiv.survivalScore > 0) this.survivorCount++;
+      this.survivorsScore += indiv.survivalScore;
     });
   }
 

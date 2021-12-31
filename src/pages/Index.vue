@@ -6,12 +6,11 @@
           <div class="col-auto">
             <div id="grid"></div>
           </div>
+          <div class="col-auto">
+            <div id="survival"></div>
+          </div>
           <div class="col">
             <div class="column q-gutter-sm q-mt-md">
-              <div class="row">
-                <div class="col">Survivors: {{ survivors }}</div>
-                <div class="col">Survival Score: {{ survivalScore }}</div>
-              </div>
               <div class="row q-gutter-sm items-center">
                 <span style="width:70px; text-align:right">SimStep</span>
                 <q-btn
@@ -71,8 +70,10 @@
         </div>
       </div>
       <div class="col">
-        <p>birthLoc: {{ selindiv.birthLoc.x }}, {{ selindiv.birthLoc.y }}</p>
-        <p>loc: {{ selindiv.loc.x }}, {{ selindiv.loc.y }}</p>
+        <div class="row">
+          <span>birthLoc: {{ selindiv.birthLoc.x }}, {{ selindiv.birthLoc.y }}</span>
+          <span>loc: {{ selindiv.loc.x }}, {{ selindiv.loc.y }}</span>
+        </div>
         <div id="nnet"></div>
       </div>
     </div>
@@ -80,47 +81,71 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import * as d3 from 'd3';
-import { Actions, Nodes, Sensors, SimState } from 'src/lib/models';
+import { Actions, InitState, Nodes, Sensors, SimState } from 'src/lib/models';
 import { params } from 'src/lib/params'
 import { simWorker } from 'src/lib/worker';
 import { Individual } from 'src/lib/individual';
 import { Synapse } from 'src/lib/synapse';
 import { Coord, Dir } from 'src/lib/coord'
+import { Grid } from 'src/lib/grid';
+import { Peeps } from 'src/lib/peeps';
 
 let gridsvg: d3.Selection<SVGGElement, unknown, HTMLElement, unknown>;
 let nnetsvg: d3.Selection<SVGGElement, unknown, HTMLElement, unknown>;
+let survsvg: d3.Selection<SVGGElement, unknown, HTMLElement, unknown>;
 
 const simStep = ref(0);
 const generation = ref(0);
 const selectedIndividual = ref(-1);
 let latchSelected = false;
-const survivalScore = ref(0);
-const survivors = ref(0);
+const survivalScores = ref(new Array<number>());
+const survivors = ref(new Array<number>());
 const selindiv = reactive({
   birthLoc: new Coord(0, 0),
   loc: new Coord(0, 0),
 })
 
+const paramsRef = reactive(params as Record<string, number | boolean>);
+
 simWorker.onmessage = (msg: MessageEvent) => {
   // console.log('Index.vue simWorker.onmessage', msg.data)
   const e = msg.data as { msg: string; payload: unknown };
+  let simState: SimState;
   switch (e.msg) {
-    case 'simState':
-      const simState = e.payload as SimState;
+    case 'endInit':
+      const initState = e.payload as InitState;
+      simStep.value = 0;
+      generation.value = 0;
+      survivors.value = [];
+      survivalScores.value = [];
+      drawGrid(initState.grid);
+      drawPeeps(initState.peeps, 0);
+      drawSurvivalGraph();
+      break;
+    case 'endStep':
+      simState = e.payload as SimState;
       simStep.value = simState.simStep;
       generation.value = simState.generation;
-      survivalScore.value = simState.peeps.individuals.reduce((accum, cur) => accum += cur.survivalScore, 0);
-      survivors.value = simState.peeps.individuals.reduce((accum, cur) => accum += cur.survivalScore > 0 ? 1 : 0, 0);
-      if (simState.simStep == 0 && simState.generation == 0) drawGrid(simState)
-      drawPeeps(simState);
+      drawPeeps(simState.peeps, simState.simStep);
       if (selectedIndividual.value != -1) {
         drawSelected(simState.peeps.individuals[selectedIndividual.value]);
         updateNnet(simState.peeps.individuals[selectedIndividual.value]);
       }
       break;
+    case 'endGeneration':
+      simState = e.payload as SimState;
+      simStep.value = simState.simStep;
+      generation.value = simState.generation;
+      drawPeeps(simState.peeps, simState.simStep);
+      survivalScores.value.push(simState.peeps.survivorsScore);
+      survivors.value.push(simState.peeps.survivorCount);
+      console.log('endofgeneration', simState.peeps.individuals)
+      drawSurvivalGraph();
+      break;
     default:
+      console.log('received unknown message: ', e.msg)
       throw new Error();
   }
 }
@@ -129,9 +154,22 @@ const gridMargin = { top: 0, right: 0, bottom: 0, left: 0 },
   gridWidth = 800 - gridMargin.left - gridMargin.right,
   gridHeight = 800 - gridMargin.top - gridMargin.bottom;
 
+const survMargin = { top: 0, right: 0, bottom: 0, left: 0 },
+  survWidth = 800 - survMargin.left - survMargin.right,
+  survHeight = 80 - survMargin.top - survMargin.bottom;
+
 const nnetMargin = { top: 0, right: 0, bottom: 0, left: 0 },
   nnetWidth = 500 - nnetMargin.left - nnetMargin.right,
   nnetHeight = 500 - nnetMargin.top - nnetMargin.bottom;
+
+const survX = computed(() => {
+  return d3.scaleLinear().domain([0, paramsRef['maxGenerations'] as number]).range([0, survWidth]);
+})
+
+const survY = computed(() => {
+  // return d3.scaleLinear().domain([0, Math.max(...survivors.value)]).range([0, survWidth]);
+  return d3.scaleLinear().domain([0, paramsRef['population'] as number]).range([survHeight, 0]);
+})
 
 onMounted(() => {
   gridsvg = d3.select('#grid')
@@ -157,12 +195,33 @@ onMounted(() => {
   gridsvg.append('g').attr('id', 'peeps')
   gridsvg.append('g').attr('id', 'dir')
 
+  survsvg = d3.select('#survival').append('svg')
+    .attr('width', survWidth + survMargin.left + survMargin.right)
+    .attr('height', survHeight + survMargin.top + survMargin.bottom)
+    .append('g')
+    .attr('transform', `translate(${survMargin.left},${survMargin.top})`);
+
+  // Add X axis --> it is a date format
+  survsvg.append('g')
+    .attr('transform', `translate(0,${survHeight})`)
+    .attr('id', 'xaxis')
+    .call(d3.axisBottom(survX.value));
+
+  // Add Y axis
+  survsvg.append('g')
+    .attr('id', 'yaxis')
+    .call(d3.axisLeft(survY.value));
+
+  // Add the line
+  survsvg.append('g').attr('id', 'survCount').append('path')
+
   nnetsvg = d3.select('#nnet')
     .append('svg')
     .attr('width', nnetWidth + nnetMargin.left + nnetMargin.right)
     .attr('height', nnetHeight + nnetMargin.top + nnetMargin.bottom)
     .append('g')
     .attr('transform', `translate(${nnetMargin.left},${nnetMargin.top})`)
+    .call(g => g.append('g').attr('id', 'connections'))
     .call(g => g.append('g').attr('id', 'sensors'))
     .call(g => g.append('g').attr('id', 'neurons'))
     .call(g => g.append('g').attr('id', 'actions'))
@@ -172,9 +231,9 @@ onMounted(() => {
 })
 
 // prettier-ignore
-const drawGrid = (sim: SimState) => {
+const drawGrid = (grid: Grid) => {
   const row = gridsvg.select('#floor').selectAll('g')
-    .data(sim.grid.data)
+    .data(grid.data)
     .join('g')
     .attr('transform', (d, i) => { return `translate(${i * 11})` })
 
@@ -194,7 +253,7 @@ const drawGrid = (sim: SimState) => {
 }
 
 
-const drawPeeps = (sim: SimState) => {
+const drawPeeps = (peeps: Peeps, simStep: number) => {
 
   // gridsvg.select('#floor').selectAll('g')
   //   .data(sim.grid.data)
@@ -205,7 +264,7 @@ const drawPeeps = (sim: SimState) => {
   //   .attr('fill', (d) => d > 0 ? 'cyan' : 'lightgrey')
 
   gridsvg.select('#peeps').selectAll('circle')
-    .data(sim.peeps.individuals)
+    .data(peeps.individuals)
     .join(
       enter => enter
         .append('circle')
@@ -239,9 +298,9 @@ const drawPeeps = (sim: SimState) => {
     .attr('fill', (d, i) => i == selectedIndividual.value ? 'red' : 'blue')
     .attr('r', (d, i) => i == selectedIndividual.value ? 5 : 3)
 
-  if (sim.simStep == params.stepsPerGeneration) {
+  if (simStep == params.stepsPerGeneration) {
     gridsvg.select('#peeps').selectAll('circle')
-      .data(sim.peeps.individuals)
+      .data(peeps.individuals)
       .attr('fill', d => d.survivalScore > 0 ? 'green' : 'blue')
   }
 
@@ -280,6 +339,22 @@ const drawSelected = (indiv: Individual) => {
     .attr('stroke-width', 2)
 }
 
+const drawSurvivalGraph = () => {
+  const line = d3.line<number>()
+    .x((d, i) => survX.value(i))
+    .y(d => survY.value(d))
+
+  survsvg.select('#survCount').select('path')
+    .datum(survivors.value)
+    .attr('fill', 'none')
+    .attr('stroke', 'steelblue')
+    .attr('stroke-width', 1.5)
+    .attr('d', line)
+  // .attr('id', d => d)
+}
+
+
+
 const getNames = (e: string[]) => e.filter(s => isNaN(Number(s)))
 const sensorNames = getNames(Object.keys(Sensors))
 const actionNames = getNames(Object.keys(Actions))
@@ -312,6 +387,7 @@ const drawNnet = () => {
     .attr('cy', (d, i) => actionY(i))
     .attr('r', 4)
 
+
   nnetsvg.select('#actions').selectAll('text')
     .data(actionNames)
     .join('text')
@@ -327,15 +403,16 @@ const updateNnet = (indiv: Individual) => {
   const neuronX = d3.scaleLinear().domain([0, indiv.nnet.neurons.length - 1]).range([270 - 50, 270 + 50])
   var actionColor = d3.scaleSequential()
     .interpolator(d3.interpolateRdYlBu)
-    .domain([-4, 4])
+    .domain([4, -4])
   var sensorColor = d3.scaleSequential()
     .interpolator(d3.interpolateRdYlBu)
-    .domain([0, 1])
+    .domain([1, 0])
 
   nnetsvg.select('#sensors').selectAll('circle')
     .data(sensorNames)
     .join('circle')
     .attr('fill', (d, i) => indiv.nnet.senses[i] ? sensorColor(indiv.nnet.senses[i] || 0) : 'lightgrey')
+    .attr('stroke', (d, i) => indiv.nnet.senses[i] ? 'black' : 'lightgrey')
 
   nnetsvg.select('#sensors').selectAll('text')
     .data(sensorNames)
@@ -349,11 +426,13 @@ const updateNnet = (indiv: Individual) => {
     .attr('cy', (d, i) => neuronY(i))
     .attr('r', 4)
     .attr('fill', d => sensorColor(d.output))
+    .attr('stroke', 'black')
 
   nnetsvg.select('#actions').selectAll('circle')
     .data(actionNames)
     .join('circle')
     .attr('fill', (d, i) => indiv.nnet.actions[i] ? actionColor(indiv.nnet.actions[i] || 0) : 'lightgrey')
+    .attr('stroke', (d, i) => indiv.nnet.actions[i] ? 'black' : 'lightgrey')
 
   nnetsvg.select('#actions').selectAll('text')
     .data(actionNames)
@@ -366,7 +445,7 @@ const updateNnet = (indiv: Individual) => {
     return d.sinkType == Nodes.NEURON ? [neuronX(d.sinkIndex), neuronY(d.sinkIndex)] : [370, actionY(d.sinkIndex)]
   })
 
-  nnetsvg.selectAll('path')
+  nnetsvg.select('#connections').selectAll('path')
     .data(indiv.nnet.connections, (d, i) => (i))
     .join('path')
     .attr('d', neuron2action)

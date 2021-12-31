@@ -25,12 +25,24 @@ export class Simulator {
     this.simStep = 0;
     this.generation = 0;
     // console.log('Simulator.init', this.getSimState());
-    self.postMessage({ msg: 'simState', payload: this.getSimState() });
+    self.postMessage({
+      msg: 'endInit',
+      payload: { grid: this.grid, peeps: this.peeps },
+    });
   }
 
   getSimState() {
     return {
       grid: this.grid,
+      peeps: this.peeps,
+      signals: this.signals,
+      simStep: this.simStep,
+      generation: this.generation,
+    };
+  }
+
+  getSimInfo() {
+    return {
       peeps: this.peeps,
       signals: this.signals,
       simStep: this.simStep,
@@ -64,10 +76,18 @@ export class Simulator {
     if (this.simStep == params.stepsPerGeneration) {
       // this is the last step of this generation
       this.peeps.calculateSurvival();
+      console.log(
+        'Survival: ',
+        this.peeps.survivorCount,
+        this.peeps.survivorsScore
+      );
     }
 
     if (postStepInfo)
-      self.postMessage({ msg: 'simState', payload: this.getSimState() });
+      self.postMessage({
+        msg: 'endStep',
+        payload: this.getSimInfo(),
+      });
   }
 
   runSimulation(postStepInfo = true, postGenerationInfo = true) {
@@ -77,7 +97,7 @@ export class Simulator {
         postGenerationInfo
       );
     if (postGenerationInfo)
-      self.postMessage({ msg: 'simState', payload: this.getSimState() });
+      self.postMessage({ msg: 'endGeneration', payload: this.getSimInfo() });
   }
 
   stepGeneration(postStepInfo = false, postGenerationInfo = true) {
@@ -95,7 +115,7 @@ export class Simulator {
     while (this.generation < params.maxGenerations) {
       this.stepGeneration(false, true);
     }
-    self.postMessage({ msg: 'simState', payload: this.getSimState() });
+    self.postMessage({ msg: 'endGeneration', payload: this.getSimState() });
   }
 
   simulate() {
@@ -116,7 +136,7 @@ export class Simulator {
     this.simStep = 0;
     this.generation++;
     if (postGenerationInfo)
-      self.postMessage({ msg: 'simState', payload: this.getSimState() });
+      self.postMessage({ msg: 'endGeneration', payload: this.getSimInfo() });
   }
 }
 
