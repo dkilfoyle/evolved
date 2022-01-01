@@ -115,3 +115,13 @@ export enum Challenge {
   ALTRUISM,
   ALTRUISM_SACRIFICE,
 }
+
+export enum Barrier {
+  NONE,
+  VERTICAL_BAR,
+  VERTICAL_BAR_RAND,
+  FIVE_STAGGER,
+  HORIZONTAL_BAR,
+  ISLANDS,
+  SPOTS,
+}

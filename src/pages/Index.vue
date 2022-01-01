@@ -162,6 +162,8 @@ const nnetMargin = { top: 0, right: 0, bottom: 0, left: 0 },
   nnetWidth = 500 - nnetMargin.left - nnetMargin.right,
   nnetHeight = 500 - nnetMargin.top - nnetMargin.bottom;
 
+let cellSize: number;
+
 const survX = computed(() => {
   return d3.scaleLinear().domain([0, paramsRef['maxGenerations'] as number]).range([0, survWidth]);
 })
@@ -176,6 +178,8 @@ onMounted(() => {
     .append('svg')
     .attr('width', gridWidth + gridMargin.left + gridMargin.right)
     .attr('height', gridHeight + gridMargin.top + gridMargin.bottom)
+    .attr('style', 'display:block')
+    // .attr('viewbox', `0 0 ${gridWidth} ${gridHeight}`)
     .append('g')
     .attr('transform', `translate(${gridMargin.left},${gridMargin.top})`);
 
@@ -232,10 +236,14 @@ onMounted(() => {
 
 // prettier-ignore
 const drawGrid = (grid: Grid) => {
+
+
+  cellSize = Math.max(gridWidth / grid.sizeX, gridHeight / grid.sizeY);
+  console.log(gridWidth, grid.sizeX, cellSize)
   const row = gridsvg.select('#floor').selectAll('g')
     .data(grid.data)
     .join('g')
-    .attr('transform', (d, i) => { return `translate(${i * 11})` })
+    .attr('transform', (d, i) => { return `translate(${i * cellSize})` })
 
   const cols = row
     // each col
@@ -245,15 +253,19 @@ const drawGrid = (grid: Grid) => {
   cols
     .join(enter =>
       enter.append('rect')
-        .attr('width', 10)
-        .attr('height', 10)
+        .attr('width', cellSize - 1)
+        .attr('height', cellSize - 1)
         .attr('fill', 'lightgrey')
-        .attr('y', (d, i) => i * 11)
+        .attr('y', (d, i) => i * cellSize)
     )
 }
 
 
 const drawPeeps = (peeps: Peeps, simStep: number) => {
+
+  const offset = (cellSize - 1) / 2;
+  const radius = offset * 0.3;
+  const radiusBig = offset * 0.4
 
   // gridsvg.select('#floor').selectAll('g')
   //   .data(sim.grid.data)
@@ -293,10 +305,10 @@ const drawPeeps = (peeps: Peeps, simStep: number) => {
 
       // .on('mouseout', function (d) { d3.select(this).attr('r', 3); selectedIndividual.value = {} })
     )
-    .attr('cx', (d) => (d.loc.x) * 11 + 5)
-    .attr('cy', (d) => (d.loc.y) * 11 + 5)
+    .attr('cx', (d) => (d.loc.x) * cellSize + offset)
+    .attr('cy', (d) => (d.loc.y) * cellSize + offset)
     .attr('fill', (d, i) => i == selectedIndividual.value ? 'red' : 'blue')
-    .attr('r', (d, i) => i == selectedIndividual.value ? 5 : 3)
+    .attr('r', (d, i) => i == selectedIndividual.value ? radius : radiusBig)
 
   if (simStep == params.stepsPerGeneration) {
     gridsvg.select('#peeps').selectAll('circle')

@@ -55,7 +55,7 @@
 import { reactive, watch } from 'vue'
 import { params } from 'src/lib/params'
 import { simWorker } from 'src/lib/worker';
-import { Challenge } from 'src/lib/models';
+import { Barrier, Challenge } from 'src/lib/models';
 
 // const stepsPerGeneration: WritableComputedRef<number> = computed({
 //   get(): number { return params.stepsPerGeneration; },
@@ -73,7 +73,14 @@ const paramGroups = [
       name: 'challenge',
       type: 'select',
       options: getEnumNames(Object.keys(Challenge))
-    }, {
+    },
+      {
+        name: 'barrierType',
+        type: 'select',
+        options: getEnumNames(Object.keys(Barrier))
+      },
+
+      {
         name: 'Restart',
         type: 'button',
         fn: () => simWorker.postMessage({ msg: 'init' })
@@ -114,7 +121,6 @@ watch(() => ({ ...paramsRef }), (newval: Record<string, number | boolean>, oldva
     }
   })
 })
-
 
 </script>
 
