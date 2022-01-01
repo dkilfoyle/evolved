@@ -192,12 +192,12 @@ export class Grid {
           );
 
           this.barrierCenters.push(center0);
-          //barrierCenters.push_back(center1);
-          //barrierCenters.push_back(center2);
+          this.barrierCenters.push(center1);
+          this.barrierCenters.push(center2);
 
           visitNeighborhood(center0, radius, addLocation);
-          //visitNeighborhood(center1, radius, f);
-          //visitNeighborhood(center2, radius, f);
+          visitNeighborhood(center1, radius, addLocation);
+          visitNeighborhood(center2, radius, addLocation);
         }
         break;
 
@@ -210,7 +210,10 @@ export class Grid {
           const verticalSliceSize = params.sizeY / (numberOfLocations + 1);
 
           for (let n = 1; n <= numberOfLocations; ++n) {
-            const loc = new Coord(params.sizeX / 2, n * verticalSliceSize);
+            const loc = new Coord(
+              getRandomInt(radius, params.sizeX - radius),
+              n * verticalSliceSize
+            );
             visitNeighborhood(loc, radius, addLocation);
             this.barrierCenters.push(loc);
           }

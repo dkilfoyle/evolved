@@ -117,7 +117,7 @@ watch(() => ({ ...paramsRef }), (newval: Record<string, number | boolean>, oldva
   Object.keys(newval).forEach(key => {
     if (newval[key] != oldval[key]) {
       simWorker.postMessage({ msg: 'setParam', payload: { param: key, value: newval[key] } })
-      if (['sizeX', 'sizeY', 'population'].includes(key)) simWorker.postMessage({ msg: 'init' })
+      if (['sizeX', 'sizeY', 'population', 'barrierType'].includes(key)) simWorker.postMessage({ msg: 'init' })
     }
   })
 })

@@ -121,6 +121,7 @@ simWorker.onmessage = (msg: MessageEvent) => {
       survivors.value = [];
       survivalScores.value = [];
       drawGrid(initState.grid);
+      drawBarriers(initState.grid);
       drawPeeps(initState.peeps, 0);
       drawSurvivalGraph();
       break;
@@ -196,6 +197,7 @@ onMounted(() => {
     .attr('class', 'arrowHead');
 
   gridsvg.append('g').attr('id', 'floor')
+  gridsvg.append('g').attr('id', 'barriers')
   gridsvg.append('g').attr('id', 'peeps')
   gridsvg.append('g').attr('id', 'dir')
 
@@ -236,10 +238,7 @@ onMounted(() => {
 
 // prettier-ignore
 const drawGrid = (grid: Grid) => {
-
-
   cellSize = Math.max(gridWidth / grid.sizeX, gridHeight / grid.sizeY);
-  console.log(gridWidth, grid.sizeX, cellSize)
   const row = gridsvg.select('#floor').selectAll('g')
     .data(grid.data)
     .join('g')
@@ -258,6 +257,18 @@ const drawGrid = (grid: Grid) => {
         .attr('fill', 'lightgrey')
         .attr('y', (d, i) => i * cellSize)
     )
+}
+
+const drawBarriers = (grid: Grid) => {
+  gridsvg.select('#barriers')
+    .selectAll('rect')
+    .data(grid.barrierLocations)
+    .join('rect')
+    .attr('width', cellSize - 1)
+    .attr('height', cellSize - 1)
+    .attr('fill', 'black')
+    .attr('x', (d) => d.x * cellSize)
+    .attr('y', (d) => d.y * cellSize)
 }
 
 
