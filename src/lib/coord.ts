@@ -6,8 +6,8 @@ export class Coord {
   x: number;
   y: number;
   constructor(x = 0, y = 0) {
-    this.x = x;
-    this.y = y;
+    this.x = Math.floor(x);
+    this.y = Math.floor(y);
   }
 
   length() {
@@ -41,6 +41,10 @@ export class Coord {
 
   isEqual(loc: Coord) {
     return this.x == loc.x && this.y == loc.y;
+  }
+
+  notEqual(loc: Coord) {
+    return !this.isEqual(loc);
   }
 
   isZeroLength() {

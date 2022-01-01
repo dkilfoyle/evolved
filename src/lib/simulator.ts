@@ -3,6 +3,7 @@ import { Peeps } from './peeps';
 import { params } from './params';
 import { Signals } from './signals';
 import { executeActions } from './actionUtils';
+import { Challenge } from './models';
 
 export class Simulator {
   grid: Grid;
@@ -50,15 +51,10 @@ export class Simulator {
     };
   }
 
-  stepSimulation(postStepInfo = true, postGenerationInfo = true) {
+  simulateOneStep() {
     this.simStep++;
-    // console.log(
-    //   'Simulator.stepSimulation',
-    //   this.simStep,
-    // );
     if (this.simStep > params.stepsPerGeneration) {
-      this.endOfGeneration(postGenerationInfo);
-      return;
+      throw new Error('exceeded simulation steps');
     }
 
     const simState = this.getSimState();
@@ -69,74 +65,115 @@ export class Simulator {
         executeActions(indiv, actionLevels, simState);
       }
     });
+
+    if (params.challenge == Challenge.RADIOACTIVE_WALLS) {
+      // During the first half of the generation, the west wall is radioactive,
+      // where X == 0. In the last half of the generation, the east wall is
+      // radioactive, where X = the area width - 1. There's an exponential
+      // falloff of the danger, falling off to zero at the arena half line.
+      const radioactiveX =
+        this.simStep < params.stepsPerGeneration / 2 ? 0 : params.sizeX - 1;
+
+      this.peeps.individuals.forEach((indiv) => {
+        const distanceFromRadioactiveWall = Math.abs(
+          indiv.loc.x - radioactiveX
+        );
+        if (distanceFromRadioactiveWall < params.sizeX / 2) {
+          const chanceOfDeath = 1.0 / distanceFromRadioactiveWall;
+          if (Math.random() < chanceOfDeath) {
+            this.peeps.queueForDeath(indiv);
+          }
+        }
+      });
+    }
+
+    // If the individual is touching any wall, we set its challengeFlag to true.
+    // At the end of the generation, all those with the flag true will reproduce.
+    if (params.challenge == Challenge.TOUCH_ANY_WALL) {
+      this.peeps.individuals.forEach((indiv) => {
+        if (
+          indiv.loc.x == 0 ||
+          indiv.loc.x == params.sizeX - 1 ||
+          indiv.loc.y == 0 ||
+          indiv.loc.y == params.sizeY - 1
+        ) {
+          indiv.challengeBits = 1;
+        }
+      });
+    }
+
+    // If this challenge is enabled, the individual gets a bit set in their challengeBits
+    // member if they are within a specified radius of a barrier center. They have to
+    // visit the barriers in sequential order.
+    if (params.challenge == Challenge.LOCATION_SEQUENCE) {
+      const radius = 9.0;
+      this.peeps.individuals.forEach((indiv) => {
+        this.grid.barrierCenters.forEach((b, n) => {
+          const bit = 1 << n;
+          if ((indiv.challengeBits & bit) == 0) {
+            if (indiv.loc.sub(b).length() <= radius) indiv.challengeBits |= bit;
+          }
+        });
+      });
+    }
+
     this.peeps.drainDeathQueue(this.grid);
     this.peeps.drainMoveQueue(this.grid);
     this.signals.fade(0);
 
+    if (this.simStep == params.stepsPerGeneration)
+      this.peeps.calculateSurvival(simState);
+  }
+
+  stepSimulation(postStepInfo = true, postGenerationInfo = true) {
     if (this.simStep == params.stepsPerGeneration) {
-      // this is the last step of this generation
-      this.peeps.calculateSurvival();
-      console.log(
-        'Survival: ',
-        this.peeps.survivorCount,
-        this.peeps.survivorsScore
-      );
+      this.startNewGeneration(postStepInfo);
+      return;
     }
 
-    if (postStepInfo)
+    this.simulateOneStep();
+
+    if (this.simStep == params.stepsPerGeneration && postGenerationInfo) {
+      self.postMessage({ msg: 'endGeneration', payload: this.getSimInfo() });
+    } else if (postStepInfo)
       self.postMessage({
         msg: 'endStep',
         payload: this.getSimInfo(),
       });
   }
 
+  // run to end of current generation
   runSimulation(postStepInfo = true, postGenerationInfo = true) {
     while (this.simStep < params.stepsPerGeneration)
       this.stepSimulation(
         postStepInfo && this.simStep % params.displayPerSteps == 0,
         postGenerationInfo
       );
-    if (postGenerationInfo)
-      self.postMessage({ msg: 'endGeneration', payload: this.getSimInfo() });
   }
 
   stepGeneration(postStepInfo = false, postGenerationInfo = true) {
-    // console.log(this.simStep, params.stepsPerGeneration, this.generation);
     if (this.simStep == params.stepsPerGeneration) {
-      this.endOfGeneration(postGenerationInfo);
+      this.startNewGeneration(postGenerationInfo);
     }
-    this.runSimulation(
-      postStepInfo,
-      postGenerationInfo && this.generation % params.displayPerGenerations == 0
-    );
+
+    // run up to the last step of current generation and show
+    this.runSimulation(postStepInfo, true);
   }
 
   runGeneration() {
     while (this.generation < params.maxGenerations) {
       this.stepGeneration(false, true);
     }
-    self.postMessage({ msg: 'endGeneration', payload: this.getSimState() });
   }
 
-  simulate() {
-    this.init();
-
-    while (this.generation < params.maxGenerations) {
-      // console.log('generation ', this.generation);
-      for (let simStep = 0; simStep < params.stepsPerGeneration; simStep++) {
-        this.stepSimulation();
-      }
-      this.endOfGeneration();
-    }
-  }
-
-  endOfGeneration(postGenerationInfo = true) {
+  startNewGeneration(postStepInfo = true) {
     this.grid.init(); // empty the grid
+    this.signals.init();
     this.peeps.spawnNewGeneration(this.grid);
     this.simStep = 0;
     this.generation++;
-    if (postGenerationInfo)
-      self.postMessage({ msg: 'endGeneration', payload: this.getSimInfo() });
+    if (postStepInfo)
+      self.postMessage({ msg: 'endStep', payload: this.getSimInfo() });
   }
 }
 

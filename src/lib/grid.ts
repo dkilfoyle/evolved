@@ -6,6 +6,8 @@ export class Grid {
   sizeX = 0;
   sizeY = 0;
   data: number[][] = [[]];
+  barrierCenters: Coord[] = [];
+  barrierLocations: Coord[] = [];
 
   clearData() {
     this.data = Array.from({ length: this.sizeX }, () =>
@@ -17,6 +19,7 @@ export class Grid {
     this.sizeX = params.sizeX;
     this.sizeY = params.sizeY;
     this.clearData();
+    this.buildBarriers();
   }
 
   findEmptyLocation() {
@@ -50,11 +53,26 @@ export class Grid {
     return loc.x >= 0 && loc.x < this.sizeX && loc.y >= 0 && loc.y < this.sizeY;
   }
 
+  isBorder(loc: Coord) {
+    return (
+      loc.x == 0 ||
+      loc.y == 0 ||
+      loc.x == this.sizeX - 1 ||
+      loc.y == this.sizeY - 1
+    );
+  }
+
   set(loc: Coord, index: number) {
     this.data[loc.x][loc.y] = index;
   }
 
   get(loc: Coord) {
     return this.data[loc.x][loc.y];
+  }
+
+  buildBarriers() {
+    // TODO
+    this.barrierCenters = [];
+    this.barrierCenters = [];
   }
 }

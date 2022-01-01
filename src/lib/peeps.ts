@@ -3,7 +3,7 @@ import { Gene } from './gene';
 import { Genome } from './genome';
 import { Grid } from './grid';
 import { Individual } from './individual';
-import { Compass } from './models';
+import { Compass, SimState } from './models';
 import { params } from './params';
 import { getRandomInt } from './utils';
 
@@ -90,11 +90,11 @@ export class Peeps {
     return gc;
   }
 
-  calculateSurvival() {
+  calculateSurvival(sim: SimState) {
     this.survivorCount = 0;
     this.survivorsScore = 0;
     this.individuals.forEach((indiv) => {
-      indiv.calculateSurvivalScore();
+      indiv.calculateSurvivalScore(sim);
       if (indiv.survivalScore > 0) this.survivorCount++;
       this.survivorsScore += indiv.survivalScore;
     });
@@ -104,7 +104,7 @@ export class Peeps {
     // calculateSurvival should alreayd have been called
     const survivors: Survivor[] = [];
     this.individuals.forEach((indiv) => {
-      indiv.calculateSurvivalScore();
+      // indiv.calculateSurvivalScore(); // should already be called in simulateOneStep
       if (indiv.survivalScore > 0)
         survivors.push({
           index: indiv.index,

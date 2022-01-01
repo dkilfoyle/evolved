@@ -141,7 +141,7 @@ simWorker.onmessage = (msg: MessageEvent) => {
       drawPeeps(simState.peeps, simState.simStep);
       survivalScores.value.push(simState.peeps.survivorsScore);
       survivors.value.push(simState.peeps.survivorCount);
-      console.log('endofgeneration', simState.peeps.individuals)
+      // console.log('endofgeneration', simState.peeps.individuals)
       drawSurvivalGraph();
       break;
     default:

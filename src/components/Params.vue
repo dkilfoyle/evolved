@@ -1,9 +1,10 @@
 <template>
-  <q-list bordered v-for="paramGroup in paramGroups" :key="paramGroup.group">
+  <q-list bordered v-for="paramGroup in paramGroups" :key="paramGroup.name">
     <q-expansion-item
       :default-opened="paramGroup.name == 'Simulation'"
       :icon="paramGroup.icon"
       :label="paramGroup.name"
+      header-class="bg-blue-grey-2"
     >
       <q-item>
         <q-item-section>
@@ -39,6 +40,9 @@
                   class="col"
                 ></q-select>
               </div>
+              <div v-if="param.type == 'button'" class="row q-mt-md">
+                <q-btn class="col" color="primary" @click="param.fn">{{ param.name }}</q-btn>
+              </div>
             </div>
           </div>
         </q-item-section>
@@ -60,7 +64,6 @@ import { Challenge } from 'src/lib/models';
 
 const getEnumNames = (e: string[]) => e.filter(s => isNaN(Number(s))).map((x, i) => ({ label: x, value: i }))
 
-
 const paramsRef = reactive(params as Record<string, number | boolean>);
 const paramGroups = [
   {
@@ -70,7 +73,11 @@ const paramGroups = [
       name: 'challenge',
       type: 'select',
       options: getEnumNames(Object.keys(Challenge))
-    }]
+    }, {
+        name: 'Restart',
+        type: 'button',
+        fn: () => simWorker.postMessage({ msg: 'init' })
+      }]
   },
   {
     name: 'Display',
