@@ -1,7 +1,7 @@
 import { Coord, Dir, visitNeighborhood } from './coord';
 import { Gene } from './gene';
 import { Genome } from './genome';
-import { Nodes, Node, Challenge, SimState } from './models';
+import { Nodes, Node, Challenge, SimState, Compass } from './models';
 import { NeuralNet } from './neuralnet';
 import { Neuron } from './neuron';
 import { params } from './params';
@@ -23,20 +23,33 @@ export class Individual {
   responsiveness = 0.5;
   survivalScore = 0;
   challengeBits = 0;
+  pastLocations: Coord[] = [];
 
   constructor(index: number, loc: Coord, genome: Genome) {
     this.index = index;
     this.loc = loc;
     this.genome = genome;
+
     this.alive = true;
     this.birthLoc = loc.clone();
     this.lastMoveDir = Dir.random8();
     this.age = 0;
     this.challengeBits = 0;
+    this.pastLocations = [];
     this.nnet = new NeuralNet(this);
     this.connections = [];
     this.nodes = new Map<number, Node>();
     this.createWiringFromGenome();
+  }
+
+  moveTo(newloc: Coord) {
+    const moveDir = newloc.sub(this.loc).asDir();
+    if (moveDir.dir9 == Compass.CENTER) {
+      debugger;
+    }
+    this.pastLocations.push(this.loc.clone());
+    this.loc.set(newloc);
+    this.lastMoveDir.set(moveDir);
   }
 
   makeConnectionList() {

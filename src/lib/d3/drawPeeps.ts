@@ -1,0 +1,112 @@
+import { Peeps } from '../peeps';
+import * as d3 from 'd3';
+import { cellSize } from './drawGrid';
+import { Individual } from '../individual';
+import { Coord, Dir } from '../coord';
+import { svgDrawNeuralNet } from './drawNeuralNet';
+
+let latchSelected = false;
+export let selectedIndividualIndex = -1;
+
+export const svgNewPeeps = () => {
+  latchSelected = false;
+  selectedIndividualIndex = -1;
+  unsetSelected();
+};
+
+export const svgDrawPeeps = (peeps: Peeps, simStep: number) => {
+  const offset = (cellSize - 1) / 2;
+  const radius = offset * 0.8;
+
+  const peepColor = d3
+    .scaleSequential()
+    .interpolator(d3.interpolateRgb.gamma(2.2)('red', 'blue'))
+    .domain([1, 0]);
+
+  d3.select('#peeps')
+    .selectAll('.small')
+    .data(peeps.individuals)
+    .join('circle')
+    .attr('class', 'small')
+    .attr('r', radius)
+    .attr('cx', (d) => d.loc.x * cellSize + offset)
+    .attr('cy', (d) => d.loc.y * cellSize + offset)
+    .attr('fill', (d) => peepColor(d.survivalScore));
+
+  d3.select('#peeps')
+    .selectAll('.large')
+    .data(peeps.individuals)
+    .join('circle')
+    .attr('class', 'large')
+    .attr('r', radius * 2)
+    .attr('cx', (d) => d.loc.x * cellSize + offset)
+    .attr('cy', (d) => d.loc.y * cellSize + offset)
+    .attr('fill', 'transparent')
+    .attr('stroke-width', 3)
+    .attr('stroke', (d, i) =>
+      i == selectedIndividualIndex ? 'green' : 'transparent'
+    )
+    .on('mouseover', function (e, d) {
+      if (!latchSelected) setSelected(this as SVGCircleElement, d);
+    })
+    .on('click', function (e, d) {
+      if (latchSelected == true && selectedIndividualIndex == d.index) {
+        // already selected and latched so unlatch and unselect
+        latchSelected = false;
+        unsetSelected();
+      } else latchSelected = !latchSelected;
+    })
+    // .on('mouseout', function (d) { d3.select(this).attr('r', 3); selectedIndividualIndex = {} })
+    .attr('cx', (d) => d.loc.x * cellSize + offset)
+    .attr('cy', (d) => d.loc.y * cellSize + offset);
+};
+
+const unsetSelected = () => {
+  d3.select('#peeps')
+    .select('.selected')
+    .classed('selected', false)
+    .attr('stroke', 'transparent');
+  d3.select('#dir').selectAll('line').remove();
+};
+
+const setSelected = (el: SVGCircleElement, indiv: Individual) => {
+  unsetSelected();
+  d3.select(el).classed('selected', true).attr('stroke', 'green'); // highlight new
+  selectedIndividualIndex = indiv.index;
+  drawSelected(indiv);
+  svgDrawNeuralNet(indiv);
+};
+
+const drawSelected = (indiv: Individual) => {
+  if (selectedIndividualIndex == -1) return;
+  const selectedCircle = d3.select('.selected');
+  const cx = parseInt(selectedCircle.attr('cx'));
+  const cy = parseInt(selectedCircle.attr('cy'));
+
+  const dir = new Dir(indiv.lastMoveDir.dir9);
+
+  d3.select('#dir')
+    .selectAll('line')
+    .data([null])
+    .join('line')
+    .attr('x1', cx)
+    .attr('y1', cy)
+    .attr('x2', cx + dir.asNormalizedCoord().x * 20)
+    .attr('y2', cy + dir.asNormalizedCoord().y * 20)
+    .attr('marker-end', 'url(#arrow)')
+    .attr('stroke', 'black')
+    .attr('stroke-width', 2);
+
+  const offset = (cellSize - 1) / 2;
+  const trail = d3
+    .line<Coord>()
+    .x((d) => d.x * cellSize + offset)
+    .y((d) => d.y * cellSize + offset);
+
+  d3.select('#trail')
+    .select('path')
+    .datum(indiv.pastLocations)
+    .attr('d', trail)
+    .attr('stroke', 'black')
+    .attr('stroke-width', 2);
+};

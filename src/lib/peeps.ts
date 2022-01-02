@@ -3,7 +3,7 @@ import { Gene } from './gene';
 import { Genome } from './genome';
 import { Grid } from './grid';
 import { Individual } from './individual';
-import { Compass, SimState } from './models';
+import { SimState } from './models';
 import { params } from './params';
 import { getRandomInt } from './utils';
 
@@ -17,8 +17,8 @@ export class Peeps {
   individuals: Individual[] = [];
   moveQueue: { indiv: Individual; newloc: Coord }[] = [];
   deathQueue: Individual[] = [];
-  survivorCount = 0;
-  survivorsScore = 0;
+  survivorCounts: number[] = [];
+  survivorScores: number[] = [];
 
   // init() {
   //   this.individuals = [];
@@ -32,6 +32,8 @@ export class Peeps {
 
   initializeGeneration0(grid: Grid) {
     this.individuals = [];
+    this.survivorCounts = [];
+    this.survivorScores = [];
 
     for (let index = 0; index <= params.population; ++index) {
       const indiv = new Individual(
@@ -46,6 +48,7 @@ export class Peeps {
 
   initializeNewGeneration(grid: Grid, survivors: Survivor[]) {
     this.individuals = [];
+
     for (let index = 0; index <= params.population; ++index) {
       const indiv = new Individual(
         index,
@@ -91,13 +94,15 @@ export class Peeps {
   }
 
   calculateSurvival(sim: SimState) {
-    this.survivorCount = 0;
-    this.survivorsScore = 0;
+    let survivorCount = 0;
+    let survivorsScore = 0;
     this.individuals.forEach((indiv) => {
       indiv.calculateSurvivalScore(sim);
-      if (indiv.survivalScore > 0) this.survivorCount++;
-      this.survivorsScore += indiv.survivalScore;
+      if (indiv.survivalScore > 0) survivorCount++;
+      survivorsScore += indiv.survivalScore;
     });
+    this.survivorCounts.push(survivorCount);
+    this.survivorScores.push(survivorsScore);
   }
 
   spawnNewGeneration(grid: Grid) {
@@ -125,27 +130,12 @@ export class Peeps {
 
   drainMoveQueue(grid: Grid) {
     this.moveQueue.forEach((move) => {
-      // const { indiv, newloc } = move;
       const indiv = move.indiv;
       const newloc = move.newloc;
-      const moveDir = newloc.sub(indiv.loc).asDir();
-      // console.log(
-      //   indiv.index,
-      //   indiv.birthLoc,
-      //   indiv.loc,
-      //   newloc,
-      //   indiv.lastMoveDir
-      // );
-      if (moveDir.dir9 == Compass.CENTER) {
-        debugger;
-        const zz = newloc.sub(indiv.loc).asDir();
-        console.log(zz);
-      }
       if (grid.isEmptyAt(newloc)) {
         grid.set(indiv.loc, 0);
         grid.set(move.newloc, indiv.index);
-        indiv.loc.set(move.newloc);
-        indiv.lastMoveDir.set(moveDir);
+        indiv.moveTo(move.newloc);
       }
     });
     this.moveQueue = [];
