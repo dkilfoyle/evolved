@@ -82,7 +82,7 @@ import { ref, onMounted } from 'vue';
 import { InitState, SimState } from 'src/lib/models';
 import { params } from 'src/lib/params'
 import { simWorker } from 'src/lib/worker';
-import { svgInitGrid, svgDrawBarriers, svgDrawGrid } from 'src/lib/d3/drawGrid'
+import { svgInitGrid, svgDrawBarriers, svgDrawGrid, svgDrawSignals } from 'src/lib/d3/drawGrid'
 import { svgDrawPeeps, svgNewPeeps } from 'src/lib/d3/drawPeeps';
 import { svgInitNeuralNet } from 'src/lib/d3/drawNeuralNet';
 import { svgDrawSurvivalGraph, svgInitSurvivalGraph } from 'src/lib/d3/drawSurvGraph';
@@ -111,6 +111,7 @@ simWorker.onmessage = (msg: MessageEvent) => {
       simState = e.payload as SimState;
       simStep.value = simState.simStep;
       generation.value = simState.generation;
+      svgDrawSignals(simState.signals);
       svgDrawPeeps(simState.peeps, simState.simStep);
       break;
     case 'endGeneration':

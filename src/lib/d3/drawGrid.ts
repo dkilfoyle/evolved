@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import { Grid } from '../grid';
+import { Signals } from '../signals';
 
 const gridMargin = { top: 0, right: 0, bottom: 0, left: 0 },
   gridWidth = 800 - gridMargin.left - gridMargin.right,
@@ -85,4 +86,16 @@ export const svgDrawBarriers = (grid: Grid) => {
     .attr('fill', 'black')
     .attr('x', (d) => d.x * cellSize)
     .attr('y', (d) => d.y * cellSize);
+};
+
+export const svgDrawSignals = (signals: Signals) => {
+  const g = gridsvg
+    .select('#floor')
+    .selectAll('g')
+    .data(signals.layers[0].data);
+
+  g.selectAll('rect')
+    .data((d) => d)
+    .attr('fill', (d) => (d > 0 ? 'purple' : 'lightgrey'))
+    .attr('opacity', (d) => (d > 0 ? Math.min(d / 3, 1) : 1));
 };

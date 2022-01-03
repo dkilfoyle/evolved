@@ -110,6 +110,12 @@ export function executeActions(
     level *= responsivenessAdjusted;
     if (level > emitThreshold && prob2bool(level)) {
       sim.signals.increment(0, indiv.loc);
+      // console.log(
+      //   'emitsignal0',
+      //   level,
+      //   indiv.loc,
+      //   sim.signals.get(0, indiv.loc)
+      // );
     }
   }
 

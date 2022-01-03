@@ -36,16 +36,16 @@ export class Signals {
   }
 
   increment(layerNum: number, loc: Coord) {
-    const radius = 1.5;
+    const radius = 3;
     const centerIncreaseAmount = 2;
-    const neighborIncreaseAmount = 1;
+    const neighborIncreaseAmount = 2;
 
-    visitNeighborhood(loc, radius, (loc) => {
-      if (this.get(layerNum, loc) < 255) {
+    visitNeighborhood(loc, radius, (vloc) => {
+      if (this.get(layerNum, vloc) < 255) {
         this.set(
           layerNum,
-          loc,
-          Math.min(255, this.get(layerNum, loc) + neighborIncreaseAmount)
+          vloc,
+          Math.min(255, this.get(layerNum, vloc) + neighborIncreaseAmount)
         );
       }
     });
