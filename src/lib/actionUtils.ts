@@ -109,7 +109,7 @@ export function executeActions(
     level = (Math.tanh(level) + 1.0) / 2.0; // convert to 0.0..1.0
     level *= responsivenessAdjusted;
     if (level > emitThreshold && prob2bool(level)) {
-      sim.signals.increment(0, indiv.loc, sim);
+      sim.signals.increment(0, indiv.loc);
     }
   }
 

@@ -1,5 +1,4 @@
 import { Coord, visitNeighborhood } from './coord';
-import { SimState } from './models';
 import { params } from './params';
 
 class Layer {
@@ -36,26 +35,26 @@ export class Signals {
     this.layers[layerNum].data[loc.x][loc.y] = val;
   }
 
-  increment(layerNum: number, loc: Coord, sim: SimState) {
+  increment(layerNum: number, loc: Coord) {
     const radius = 1.5;
     const centerIncreaseAmount = 2;
     const neighborIncreaseAmount = 1;
 
     visitNeighborhood(loc, radius, (loc) => {
-      if (sim.signals.get(layerNum, loc) < 255) {
-        sim.signals.set(
+      if (this.get(layerNum, loc) < 255) {
+        this.set(
           layerNum,
           loc,
-          Math.min(255, sim.signals.get(layerNum, loc) + neighborIncreaseAmount)
+          Math.min(255, this.get(layerNum, loc) + neighborIncreaseAmount)
         );
       }
     });
 
-    if (sim.signals.get(layerNum, loc) < 255) {
-      sim.signals.set(
+    if (this.get(layerNum, loc) < 255) {
+      this.set(
         layerNum,
         loc,
-        Math.min(255, sim.signals.get(layerNum, loc) + centerIncreaseAmount)
+        Math.min(255, this.get(layerNum, loc) + centerIncreaseAmount)
       );
     }
   }

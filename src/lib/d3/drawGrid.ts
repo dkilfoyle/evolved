@@ -36,9 +36,11 @@ export const svgInitGrid = () => {
     .attr('class', 'arrowHead');
 
   gridsvg.append('g').attr('id', 'floor');
+  gridsvg.append('g').attr('id', 'signals');
   gridsvg.append('g').attr('id', 'barriers');
   gridsvg.append('g').attr('id', 'peeps');
   gridsvg.append('g').attr('id', 'dir');
+
   gridsvg
     .append('g')
     .attr('id', 'trail')
@@ -50,6 +52,7 @@ export const svgInitGrid = () => {
 
 // prettier-ignore
 export const svgDrawGrid = (grid: Grid) => {
+
   cellSize = Math.max(gridWidth / grid.sizeX, gridHeight / grid.sizeY);
   const row = gridsvg.select('#floor').selectAll('g')
     .data(grid.data)

@@ -104,14 +104,14 @@ simWorker.onmessage = (msg: MessageEvent) => {
       svgDrawGrid(initState.grid);
       svgDrawBarriers(initState.grid);
       svgNewPeeps();
-      svgDrawPeeps(initState.peeps, initState.simStep);
+      svgDrawPeeps(initState.peeps, 0);
       svgDrawSurvivalGraph(initState.peeps);
       break;
     case 'endStep':
       simState = e.payload as SimState;
       simStep.value = simState.simStep;
       generation.value = simState.generation;
-      svgDrawPeeps(simState.peeps);
+      svgDrawPeeps(simState.peeps, simState.simStep);
       break;
     case 'endGeneration':
       simState = e.payload as SimState;

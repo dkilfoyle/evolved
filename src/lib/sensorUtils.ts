@@ -146,7 +146,7 @@ export function getSignalDensityAlongAxis(
     }
   };
 
-  visitNeighborhood(loc, params.populationSensorRadius, f);
+  visitNeighborhood(loc, params.signalSensorRadius, f);
 
   const maxSumMag = 6.0 * params.signalSensorRadius * Signals.SIGNAL_MAX;
   if (!(sum >= -maxSumMag && sum <= maxSumMag)) throw new Error();

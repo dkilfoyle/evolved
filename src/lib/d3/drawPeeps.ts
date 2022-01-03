@@ -14,6 +14,7 @@ export const svgNewPeeps = () => {
   unsetSelected();
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const svgDrawPeeps = (peeps: Peeps, simStep: number) => {
   const offset = (cellSize - 1) / 2;
   const radius = offset * 0.8;
@@ -46,6 +47,7 @@ export const svgDrawPeeps = (peeps: Peeps, simStep: number) => {
     .attr('stroke', (d, i) =>
       i == selectedIndividualIndex ? 'green' : 'transparent'
     )
+    .classed('selected', (d) => selectedIndividualIndex == d.index)
     .on('mouseover', function (e, d) {
       if (!latchSelected) setSelected(this as SVGCircleElement, d);
     })
@@ -55,10 +57,11 @@ export const svgDrawPeeps = (peeps: Peeps, simStep: number) => {
         latchSelected = false;
         unsetSelected();
       } else latchSelected = !latchSelected;
-    })
-    // .on('mouseout', function (d) { d3.select(this).attr('r', 3); selectedIndividualIndex = {} })
-    .attr('cx', (d) => d.loc.x * cellSize + offset)
-    .attr('cy', (d) => d.loc.y * cellSize + offset);
+    });
+  // .on('mouseout', function (d) { d3.select(this).attr('r', 3); selectedIndividualIndex = {} })
+
+  if (selectedIndividualIndex != -1)
+    drawSelected(peeps.individuals[selectedIndividualIndex]);
 };
 
 const unsetSelected = () => {
@@ -78,6 +81,8 @@ const setSelected = (el: SVGCircleElement, indiv: Individual) => {
 };
 
 const drawSelected = (indiv: Individual) => {
+  console.log('drawSelected', selectedIndividualIndex);
+
   if (selectedIndividualIndex == -1) return;
   const selectedCircle = d3.select('.selected');
   const cx = parseInt(selectedCircle.attr('cx'));
@@ -85,10 +90,10 @@ const drawSelected = (indiv: Individual) => {
 
   const dir = new Dir(indiv.lastMoveDir.dir9);
 
+  d3.select('#dir').selectAll('line').remove();
+
   d3.select('#dir')
-    .selectAll('line')
-    .data([null])
-    .join('line')
+    .append('line')
     .attr('x1', cx)
     .attr('y1', cy)
     .attr('x2', cx + dir.asNormalizedCoord().x * 20)
@@ -103,10 +108,12 @@ const drawSelected = (indiv: Individual) => {
     .x((d) => d.x * cellSize + offset)
     .y((d) => d.y * cellSize + offset);
 
+  d3.select('#trail').select('path').attr('d', null);
+
   d3.select('#trail')
     .select('path')
     .datum(indiv.pastLocations)
     .attr('d', trail)
-    .attr('stroke', 'black')
+    .attr('stroke', (d, i) => `rgb(${i * 5},0,0)`)
     .attr('stroke-width', 2);
 };
