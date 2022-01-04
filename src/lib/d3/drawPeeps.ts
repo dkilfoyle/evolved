@@ -7,10 +7,20 @@ import { svgDrawNeuralNet } from './drawNeuralNet';
 
 let latchSelected = false;
 export let selectedIndividualIndex = -1;
+let selectedIndividualChangeCallback: (selectedIndex: number) => void;
+
+export const svgInitPeeps = (callback: (selectedIndex: number) => void) => {
+  selectedIndividualChangeCallback = callback;
+};
+
+const setSelectedIndex = (index: number) => {
+  selectedIndividualIndex = index;
+  selectedIndividualChangeCallback(index);
+};
 
 export const svgNewPeeps = () => {
   latchSelected = false;
-  selectedIndividualIndex = -1;
+  setSelectedIndex(-1);
   unsetSelected();
 };
 
@@ -56,6 +66,7 @@ export const svgDrawPeeps = (peeps: Peeps, simStep: number) => {
         // already selected and latched so unlatch and unselect
         latchSelected = false;
         unsetSelected();
+        setSelectedIndex(-1);
       } else latchSelected = !latchSelected;
     });
   // .on('mouseout', function (d) { d3.select(this).attr('r', 3); selectedIndividualIndex = {} })
@@ -75,7 +86,7 @@ const unsetSelected = () => {
 const setSelected = (el: SVGCircleElement, indiv: Individual) => {
   unsetSelected();
   d3.select(el).classed('selected', true).attr('stroke', 'green'); // highlight new
-  selectedIndividualIndex = indiv.index;
+  setSelectedIndex(indiv.index);
   drawSelected(indiv);
   svgDrawNeuralNet(indiv);
 };

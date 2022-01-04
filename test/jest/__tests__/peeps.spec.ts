@@ -3,6 +3,8 @@ import { describe, expect, it, beforeAll } from '@jest/globals';
 import { params } from 'src/lib/params';
 import { Genome } from 'src/lib/genome';
 import { Grid } from 'src/lib/grid';
+import { Individual } from 'src/lib/individual';
+import { Coord } from 'src/lib/coord';
 
 describe('Peeps', () => {
   let peeps: Peeps;
@@ -19,15 +21,17 @@ describe('Peeps', () => {
   });
 
   it('can make children', () => {
+    let index = 0;
     const survivors = [
-      { index: 0, score: 1, genes: new Genome().genes },
-      { index: 1, score: 1, genes: new Genome().genes },
-      { index: 2, score: 1, genes: new Genome().genes },
-      { index: 3, score: 1, genes: new Genome().genes },
-      { index: 4, score: 1, genes: new Genome().genes },
-      { index: 5, score: 1, genes: new Genome().genes },
+      new Individual(index++, new Coord(0, 0), new Genome()),
+      new Individual(index++, new Coord(0, 0), new Genome()),
+      new Individual(index++, new Coord(0, 0), new Genome()),
+      new Individual(index++, new Coord(0, 0), new Genome()),
+      new Individual(index++, new Coord(0, 0), new Genome()),
+      new Individual(index++, new Coord(0, 0), new Genome()),
+      new Individual(index++, new Coord(0, 0), new Genome()),
     ];
-    const childGenome = peeps.generateChildGenome(survivors);
+    const childGenome = peeps.generateChildGenome(survivors, 0);
     childGenome.applyPointMutations();
     // console.log(childGenome);
     expect(childGenome).toBeDefined();

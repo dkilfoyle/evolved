@@ -31,22 +31,19 @@ describe('Individual', () => {
       new Gene(0, 3, 0, 1, 3.069997885821225),
 
       // sensor 2 to neuron 9 to neuron 8
-      new Gene(1, 2, 0, 9, -2.951891588576032),
-      new Gene(0, 9, 0, 8, 2.951891588576032),
+      new Gene(1, 2, 0, 4, -2.951891588576032),
+      new Gene(0, 4, 0, 1, 2.951891588576032),
 
-      // sensor 3 to neuron 7 to neuron 5 to action 10
-      new Gene(1, 3, 0, 7, -2.142790939487151),
-      new Gene(0, 7, 0, 5, 1.5134911564336129),
+      // sensor 3 to neuron 4 to neuron 2 to action 10
+      new Gene(1, 3, 0, 4, -2.142790939487151),
+      new Gene(0, 4, 0, 2, 1.5134911564336129),
       new Gene(0, 5, 1, 10, -2.951891588576032),
 
       // neuron to action
-      new Gene(0, 9, 1, 1, 2.4861636469169373),
-      new Gene(0, 8, 1, 2, 1.142790939487151),
-      new Gene(0, 6, 1, 3, -1.622634462668488),
       new Gene(0, 4, 1, 4, -0.5134911564336129),
 
       // sensor to neuron
-      new Gene(1, 5, 0, 8, -1.1271399966105573),
+      new Gene(1, 5, 0, 3, -1.1271399966105573),
       new Gene(1, 12, 0, 3, 2.3429095821144834),
     ];
 

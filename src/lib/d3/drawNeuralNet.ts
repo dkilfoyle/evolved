@@ -6,8 +6,8 @@ import { Synapse } from '../synapse';
 let nnetsvg: d3.Selection<SVGGElement, unknown, HTMLElement, unknown>;
 
 const nnetMargin = { top: 0, right: 0, bottom: 0, left: 0 },
-  nnetWidth = 500 - nnetMargin.left - nnetMargin.right,
-  nnetHeight = 500 - nnetMargin.top - nnetMargin.bottom;
+  nnetWidth = 600 - nnetMargin.left - nnetMargin.right,
+  nnetHeight = 600 - nnetMargin.top - nnetMargin.bottom;
 
 const getNames = (e: string[]) => e.filter((s) => isNaN(Number(s)));
 const sensorNames = getNames(Object.keys(Sensors));
@@ -42,7 +42,7 @@ export const svgInitNeuralNet = () => {
     .join('circle')
     .attr('cx', 170)
     .attr('cy', (d, i) => sensorY(i))
-    .attr('r', 4);
+    .attr('r', 8);
 
   nnetsvg
     .select('#sensors')
@@ -62,7 +62,7 @@ export const svgInitNeuralNet = () => {
     .join('circle')
     .attr('cx', 370)
     .attr('cy', (d, i) => actionY(i))
-    .attr('r', 4);
+    .attr('r', 8);
 
   nnetsvg
     .select('#actions')
@@ -120,7 +120,7 @@ export const svgDrawNeuralNet = (indiv: Individual) => {
     .join('circle')
     .attr('cx', (d, i) => neuronX(i))
     .attr('cy', (d, i) => neuronY(i))
-    .attr('r', 4)
+    .attr('r', 8)
     .attr('fill', (d) => sensorColor(d.output))
     .attr('stroke', 'black');
 

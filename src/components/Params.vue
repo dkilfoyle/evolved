@@ -4,7 +4,7 @@
       :default-opened="paramGroup.name == 'Simulation'"
       :icon="paramGroup.icon"
       :label="paramGroup.name"
-      header-class="bg-blue-grey-2"
+      header-class="bg-grey-4"
     >
       <q-item>
         <q-item-section>
@@ -40,8 +40,8 @@
                   class="col"
                 ></q-select>
               </div>
-              <div v-if="param.type == 'button'" class="row q-mt-md">
-                <q-btn class="col" color="primary" @click="param.fn">{{ param.name }}</q-btn>
+              <div v-if="param.type == 'button'" class="row q-my-md justify-end">
+                <q-btn icon="restart_alt" color="primary" @click="param.fn" :label="param.name"></q-btn>
               </div>
             </div>
           </div>
@@ -83,6 +83,7 @@ const paramGroups = [
       {
         name: 'Restart',
         type: 'button',
+        icon: 'restart',
         fn: () => simWorker.postMessage({ msg: 'init' })
       }]
   },

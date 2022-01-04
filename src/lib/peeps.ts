@@ -1,16 +1,21 @@
 import { Coord } from './coord';
 import { Gene } from './gene';
-import { Genome } from './genome';
+import { Genome, genomeSimilarity } from './genome';
 import { Grid } from './grid';
 import { Individual } from './individual';
 import { SimState } from './models';
 import { params } from './params';
 import { getRandomInt } from './utils';
 
-interface Survivor {
-  index: number;
-  score: number;
-  genes: Gene[];
+// interface Survivor {
+//   indiv: Individual;
+//   score: number;
+// }
+
+interface Mutation {
+  mutation: string;
+  num: number;
+  generation: number;
 }
 
 export class Peeps {
@@ -19,6 +24,8 @@ export class Peeps {
   deathQueue: Individual[] = [];
   survivorCounts: number[] = [];
   survivorScores: number[] = [];
+  diversityScores: number[] = [];
+  mutations: Mutation[] = [];
 
   // init() {
   //   this.individuals = [];
@@ -34,6 +41,8 @@ export class Peeps {
     this.individuals = [];
     this.survivorCounts = [];
     this.survivorScores = [];
+    this.diversityScores = [];
+    this.mutations = [];
 
     for (let index = 0; index <= params.population; ++index) {
       const indiv = new Individual(
@@ -46,49 +55,66 @@ export class Peeps {
     }
   }
 
-  initializeNewGeneration(grid: Grid, survivors: Survivor[]) {
+  initializeNewGeneration(
+    grid: Grid,
+    survivors: Individual[],
+    generation: number
+  ) {
     this.individuals = [];
 
     for (let index = 0; index <= params.population; ++index) {
       const indiv = new Individual(
         index,
         grid.findEmptyLocation(),
-        this.generateChildGenome(survivors)
+        this.generateChildGenome(survivors, generation)
       );
       grid.set(indiv.loc, indiv.index);
       this.individuals.push(indiv);
     }
   }
 
-  generateChildGenome(survivors: Survivor[]) {
-    let gp1, gp2;
+  generateChildGenome(survivors: Individual[], generation: number) {
+    // select parents
+    let p1idx, p2idx;
     if (params.chooseParentsByFitness && survivors.length > 1) {
-      const p1idx = getRandomInt(1, survivors.length - 1);
-      const p2idx = getRandomInt(0, p1idx - 1);
-      gp1 = survivors[p1idx].genes;
-      gp2 = survivors[p2idx].genes;
+      p1idx = getRandomInt(1, survivors.length - 1);
+      p2idx = getRandomInt(0, p1idx - 1);
     } else {
-      gp1 = survivors[getRandomInt(0, survivors.length - 1)].genes;
-      gp2 = survivors[getRandomInt(0, survivors.length - 1)].genes;
+      p1idx = getRandomInt(0, survivors.length - 1);
+      p2idx = getRandomInt(0, survivors.length - 1);
     }
+    const gp1 = survivors[p1idx].genome;
+    const gp2 = survivors[p2idx].genome;
 
     const gc = new Genome();
+
     if (params.sexualReproduction) {
       // child genome is [....p1....][..p2..][...............p1..............]
-      let crossStart = getRandomInt(0, gp1.length - 1);
-      let crossEnd = getRandomInt(0, gp1.length - 1);
+      let crossStart = getRandomInt(0, gp1.genes.length - 1);
+      let crossEnd = getRandomInt(0, gp1.genes.length - 1);
       if (crossEnd < crossStart)
         [crossStart, crossEnd] = [crossEnd, crossStart];
 
       gc.genes = new Array<Gene>().concat(
-        [...gp1.slice(0, crossStart)],
-        [...gp2.slice(crossStart, crossEnd)],
-        [...gp1.slice(crossEnd)]
+        [...gp1.genes.slice(0, crossStart)],
+        [...gp2.genes.slice(crossStart, crossEnd)],
+        [...gp1.genes.slice(crossEnd)]
       );
-    } else gc.genes = [...gp2];
+    } else gc.genes = [...gp2.genes];
 
-    gc.randomInsertDeletion();
-    gc.applyPointMutations();
+    const [insertions, deletions] = gc.randomInsertDeletion();
+    const point = gc.applyPointMutations();
+
+    if (insertions)
+      this.mutations.push({
+        mutation: 'insertion',
+        num: insertions,
+        generation,
+      });
+    if (deletions)
+      this.mutations.push({ mutation: 'deletion', num: deletions, generation });
+    if (point)
+      this.mutations.push({ mutation: 'point', num: point, generation });
 
     return gc;
   }
@@ -105,23 +131,18 @@ export class Peeps {
     this.survivorScores.push(survivorsScore);
   }
 
-  spawnNewGeneration(grid: Grid) {
+  spawnNewGeneration(grid: Grid, generation: number) {
     // calculateSurvival should alreayd have been called
-    const survivors: Survivor[] = [];
+    const survivors: Individual[] = [];
     this.individuals.forEach((indiv) => {
       // indiv.calculateSurvivalScore(); // should already be called in simulateOneStep
-      if (indiv.survivalScore > 0)
-        survivors.push({
-          index: indiv.index,
-          score: indiv.survivalScore,
-          genes: [...indiv.genome.genes],
-        });
+      if (indiv.survivalScore > 0) survivors.push(indiv);
     });
 
-    survivors.sort((a, b) => a.score - b.score);
+    survivors.sort((a, b) => a.survivalScore - b.survivalScore);
 
     if (survivors.length == 0) this.initializeGeneration0(grid);
-    else this.initializeNewGeneration(grid, survivors);
+    else this.initializeNewGeneration(grid, survivors, generation);
   }
 
   queueForMove(indiv: Individual, newloc: Coord) {
@@ -151,5 +172,30 @@ export class Peeps {
       indiv.alive = false;
     });
     this.deathQueue = [];
+  }
+
+  // returns 0.0..1.0
+  // Samples random pairs of individuals regardless if they are alive or not
+  calculateGeneticDiversity() {
+    if (params.population < 2) {
+      return 0.0;
+    }
+    // count limits the number of genomes sampled for performance reasons.
+    let count = Math.min(1000, params.population); // todo: !!! p.analysisSampleSize;
+    let numSamples = 0;
+    let similaritySum = 0.0;
+
+    while (count > 0) {
+      const index0 = getRandomInt(1, params.population - 1); // skip first and last elements
+      const index1 = index0 + 1;
+      similaritySum += genomeSimilarity(
+        this.individuals[index0].genome,
+        this.individuals[index1].genome
+      );
+      --count;
+      ++numSamples;
+    }
+    const diversity = 1.0 - similaritySum / numSamples;
+    this.diversityScores.push(diversity);
   }
 }

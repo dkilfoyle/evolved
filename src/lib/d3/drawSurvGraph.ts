@@ -3,7 +3,7 @@ import { params } from '../params';
 import { Peeps } from '../peeps';
 
 const survMargin = { top: 0, right: 0, bottom: 0, left: 0 },
-  survWidth = 800 - survMargin.left - survMargin.right,
+  survWidth = 600 - survMargin.left - survMargin.right,
   survHeight = 80 - survMargin.top - survMargin.bottom;
 
 let svg: d3.Selection<SVGGElement, unknown, HTMLElement, unknown>;

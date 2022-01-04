@@ -83,7 +83,7 @@ export const svgDrawBarriers = (grid: Grid) => {
     .join('rect')
     .attr('width', cellSize - 1)
     .attr('height', cellSize - 1)
-    .attr('fill', 'black')
+    .attr('fill', '#616161')
     .attr('x', (d) => d.x * cellSize)
     .attr('y', (d) => d.y * cellSize);
 };
@@ -96,6 +96,6 @@ export const svgDrawSignals = (signals: Signals) => {
 
   g.selectAll('rect')
     .data((d) => d)
-    .attr('fill', (d) => (d > 0 ? 'purple' : 'lightgrey'))
+    .attr('fill', (d) => (d > 0 ? '#9ccc65' : 'lightgrey'))
     .attr('opacity', (d) => (d > 0 ? Math.min(d / 3, 1) : 1));
 };

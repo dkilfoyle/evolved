@@ -121,8 +121,10 @@ export class Simulator {
     this.peeps.drainMoveQueue(this.grid);
     this.signals.fade(0);
 
-    if (this.simStep == params.stepsPerGeneration)
+    if (this.simStep == params.stepsPerGeneration) {
       this.peeps.calculateSurvival(simState);
+      this.peeps.calculateGeneticDiversity();
+    }
   }
 
   stepSimulation(postStepInfo = true, postGenerationInfo = true) {
@@ -169,9 +171,9 @@ export class Simulator {
   startNewGeneration(postStepInfo = true) {
     this.grid.init(); // empty the grid
     this.signals.init();
-    this.peeps.spawnNewGeneration(this.grid);
     this.simStep = 0;
     this.generation++;
+    this.peeps.spawnNewGeneration(this.grid, this.generation);
     if (postStepInfo)
       self.postMessage({ msg: 'endStep', payload: this.getSimInfo() });
   }

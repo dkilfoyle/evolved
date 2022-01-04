@@ -55,14 +55,7 @@ export class Gene {
         break;
       case 1:
         this.sourceIndex ^= 1 << getRandomInt(0, 7);
-        if (this.sourceIndex > this.getMaxSourceIndex()) {
-          console.log(
-            this.sourceIndex,
-            this.sourceIndex % (this.getMaxSourceIndex() + 1)
-          );
-        }
         this.sourceIndex %= this.getMaxSourceIndex() + 1;
-
         break;
       case 2:
         this.sinkType = this.sinkType ^ 1;
