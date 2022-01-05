@@ -149,6 +149,11 @@ simWorker.onmessage = (msg: MessageEvent) => {
       svgDrawSignals(simState.signals);
       svgDrawPeeps(simState.peeps, simState.simStep);
       break;
+    case 'newBarrier':
+      simState = e.payload as SimState;
+      console.log(simState.grid)
+      svgDrawBarriers(simState.grid);
+      break;
     case 'endGeneration':
       simState = e.payload as SimState;
       simStep.value = simState.simStep;
@@ -171,7 +176,6 @@ simWorker.onmessage = (msg: MessageEvent) => {
         yVal: m.num,
         color: mutationColor(m.mutation)
       })));
-      console.log(simState.peeps.mutations)
       break;
     default:
       console.log('received unknown message: ', e.msg)

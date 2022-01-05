@@ -11,7 +11,7 @@ describe('Peeps', () => {
   let grid: Grid;
   beforeAll(() => {
     grid = new Grid();
-    grid.init();
+    grid.init(0);
     peeps = new Peeps();
     peeps.initializeGeneration0(grid);
   });

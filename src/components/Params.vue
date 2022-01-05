@@ -69,17 +69,23 @@ const paramGroups = [
   {
     name: 'Simulation',
     icon: 'apps',
-    params: ['sizeX', 'sizeY', 'population', 'maxGenerations', 'stepsPerGeneration', {
-      name: 'challenge',
-      type: 'select',
-      options: getEnumNames(Object.keys(Challenge))
-    },
+    params: ['sizeX', 'sizeY', 'population', 'maxGenerations', 'stepsPerGeneration',
+      {
+        name: 'challenge',
+        type: 'select',
+        options: getEnumNames(Object.keys(Challenge))
+      },
       {
         name: 'barrierType',
         type: 'select',
         options: getEnumNames(Object.keys(Barrier))
       },
-
+      'replaceBarrierTypeGenerationNumber',
+      {
+        name: 'replaceBarrierType',
+        type: 'select',
+        options: getEnumNames(Object.keys(Barrier))
+      },
       {
         name: 'Restart',
         type: 'button',

@@ -1,3 +1,4 @@
+import * as d3 from 'd3';
 import { Coord, Dir, visitNeighborhood } from './coord';
 import { Gene } from './gene';
 import { Genome } from './genome';
@@ -24,11 +25,14 @@ export class Individual {
   survivalScore = 0;
   challengeBits = 0;
   pastLocations: Coord[] = [];
+  color: string;
 
   constructor(index: number, loc: Coord, genome: Genome) {
     this.index = index;
     this.loc = loc;
     this.genome = genome;
+
+    this.color = d3.interpolateHsl('green', 'blue')(Math.random());
 
     this.alive = true;
     this.birthLoc = loc.clone();

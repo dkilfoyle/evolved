@@ -16,7 +16,7 @@ Typescript Webapp conversion of David Miller's BioSim4 ([github](https://github.
 8. Allow genomes of different number of genes
 9. ~~Online webapp~~
 10. Show in generation deaths
-11. Show mutations in diversity graph
+11. ~~Show mutations in diversity graph~~
 
 ## References
 

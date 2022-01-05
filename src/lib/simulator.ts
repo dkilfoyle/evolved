@@ -19,7 +19,7 @@ export class Simulator {
   }
 
   init() {
-    this.grid.init();
+    this.grid.init(this.generation);
     this.signals.init();
     // this.peeps.init(); // make individuals of size population
     this.peeps.initializeGeneration0(this.grid); // make random genome for each individual
@@ -169,10 +169,12 @@ export class Simulator {
   }
 
   startNewGeneration(postStepInfo = true) {
-    this.grid.init(); // empty the grid
-    this.signals.init();
     this.simStep = 0;
     this.generation++;
+    this.grid.init(this.generation); // empty the grid
+    if (this.generation == params.replaceBarrierTypeGenerationNumber)
+      self.postMessage({ msg: 'newBarrier', payload: this.getSimState() });
+    this.signals.init();
     this.peeps.spawnNewGeneration(this.grid, this.generation);
     if (postStepInfo)
       self.postMessage({ msg: 'endStep', payload: this.getSimInfo() });

@@ -16,11 +16,18 @@ export class Grid {
     );
   }
 
-  init() {
+  init(generation: number) {
     this.sizeX = params.sizeX;
     this.sizeY = params.sizeY;
     this.clearData();
-    this.createBarrier();
+    if (params.replaceBarrierTypeGenerationNumber == -1)
+      this.createBarrier(params.barrierType);
+    else
+      this.createBarrier(
+        generation >= params.replaceBarrierTypeGenerationNumber
+          ? params.replaceBarrierType
+          : params.barrierType
+      );
   }
 
   findEmptyLocation() {
@@ -71,12 +78,12 @@ export class Grid {
     return this.data[loc.x][loc.y];
   }
 
-  createBarrier() {
+  createBarrier(barrierId: Barrier) {
     this.barrierLocations = [];
     this.barrierCenters = [];
 
     const addLocation = (loc: Coord) => {
-      this.set(loc, params.barrierType);
+      this.set(loc, 0xffff);
       this.barrierLocations.push(loc);
     };
 
@@ -89,13 +96,13 @@ export class Grid {
       for (let x = minX; x <= maxX; ++x) {
         for (let y = minY; y <= maxY; ++y) {
           const loc = new Coord(x, y);
-          this.set(loc, params.barrierType);
+          this.set(loc, 0xffff);
           this.barrierLocations.push(loc);
         }
       }
     };
 
-    switch (params.barrierType) {
+    switch (barrierId) {
       case Barrier.NONE:
         return;
 

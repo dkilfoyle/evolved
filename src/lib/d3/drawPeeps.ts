@@ -29,10 +29,11 @@ export const svgDrawPeeps = (peeps: Peeps, simStep: number) => {
   const offset = (cellSize - 1) / 2;
   const radius = offset * 0.8;
 
-  const peepColor = d3
-    .scaleSequential()
-    .interpolator(d3.interpolateRgb.gamma(2.2)('red', 'blue'))
-    .domain([1, 0]);
+  const peepColor = (indiv: Individual) => {
+    if (!indiv.alive) return '#795548';
+    if (indiv.survivalScore == 0) return indiv.color;
+    return d3.interpolateHsl('orange', 'red')(indiv.survivalScore);
+  };
 
   d3.select('#peeps')
     .selectAll('.small')
@@ -42,7 +43,7 @@ export const svgDrawPeeps = (peeps: Peeps, simStep: number) => {
     .attr('r', radius)
     .attr('cx', (d) => d.loc.x * cellSize + offset)
     .attr('cy', (d) => d.loc.y * cellSize + offset)
-    .attr('fill', (d) => peepColor(d.survivalScore));
+    .attr('fill', (d) => peepColor(d));
 
   d3.select('#peeps')
     .selectAll('.large')
@@ -92,8 +93,6 @@ const setSelected = (el: SVGCircleElement, indiv: Individual) => {
 };
 
 const drawSelected = (indiv: Individual) => {
-  console.log('drawSelected', selectedIndividualIndex);
-
   if (selectedIndividualIndex == -1) return;
   const selectedCircle = d3.select('.selected');
   const cx = parseInt(selectedCircle.attr('cx'));

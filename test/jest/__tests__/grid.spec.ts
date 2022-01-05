@@ -6,7 +6,7 @@ describe('Grid', () => {
   let grid: Grid;
   beforeAll(() => {
     grid = new Grid();
-    grid.init();
+    grid.init(0);
   });
   it('is correct size', () => {
     expect(grid.data.length).toEqual(params.sizeX);
