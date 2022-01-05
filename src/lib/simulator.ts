@@ -79,7 +79,7 @@ export class Simulator {
           indiv.loc.x - radioactiveX
         );
         if (distanceFromRadioactiveWall < params.sizeX / 2) {
-          const chanceOfDeath = 1.0 / distanceFromRadioactiveWall;
+          const chanceOfDeath = 1.0 / (distanceFromRadioactiveWall * 2);
           if (Math.random() < chanceOfDeath) {
             this.peeps.queueForDeath(indiv);
           }

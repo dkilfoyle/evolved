@@ -30,7 +30,7 @@ export const svgDrawPeeps = (peeps: Peeps, simStep: number) => {
   const radius = offset * 0.8;
 
   const peepColor = (indiv: Individual) => {
-    if (!indiv.alive) return '#795548';
+    if (!indiv.alive) return '#79554855';
     if (indiv.survivalScore == 0) return indiv.color;
     return d3.interpolateHsl('orange', 'red')(indiv.survivalScore);
   };

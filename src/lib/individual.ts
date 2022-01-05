@@ -188,6 +188,7 @@ export class Individual {
   calculateSurvivalScore(sim: SimState) {
     if (!this.alive) {
       this.survivalScore = 0;
+      return;
     }
 
     switch (params.challenge) {
