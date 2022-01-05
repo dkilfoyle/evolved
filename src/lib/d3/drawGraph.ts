@@ -105,8 +105,7 @@ export const svgInitGraph = (graphDefinition: GraphDefinition) => {
 
 export interface GraphEvent {
   xVal: number;
-  yVal: number;
-  name: string;
+  color: string;
 }
 
 export const svgDrawGraph = (
@@ -126,8 +125,8 @@ export const svgDrawGraph = (
       .attr('x1', (d) => graph.x(d.xVal))
       .attr('y1', graph.y(0))
       .attr('x2', (d) => graph.x(d.xVal))
-      .attr('y2', graph.y(graph.y.domain()[1]))
-      .attr('stroke', 'black');
+      .attr('y2', graph.y(graph.y.domain()[1] * 0.25))
+      .attr('stroke', (d) => d.color);
 };
 
 const createGradient = (

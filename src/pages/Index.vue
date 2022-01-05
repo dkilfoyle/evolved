@@ -158,10 +158,18 @@ simWorker.onmessage = (msg: MessageEvent) => {
       svgNewPeeps();
       svgDrawPeeps(simState.peeps, simState.simStep);
       svgDrawGraph(survivalGraph, simState.peeps.survivorCounts);
+      const mutationColor = (mutation: string) => {
+        switch (mutation) {
+          case 'point': return 'green';
+          case 'insertion': return 'blue';
+          case 'deletion': return 'red'
+        }
+        return 'black'
+      }
       svgDrawGraph(diversityGraph, simState.peeps.diversityScores, simState.peeps.mutations.map(m => ({
         xVal: m.generation,
         yVal: m.num,
-        name: m.mutation
+        color: mutationColor(m.mutation)
       })));
       console.log(simState.peeps.mutations)
       break;
