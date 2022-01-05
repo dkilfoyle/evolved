@@ -158,7 +158,11 @@ simWorker.onmessage = (msg: MessageEvent) => {
       svgNewPeeps();
       svgDrawPeeps(simState.peeps, simState.simStep);
       svgDrawGraph(survivalGraph, simState.peeps.survivorCounts);
-      svgDrawGraph(diversityGraph, simState.peeps.diversityScores);
+      svgDrawGraph(diversityGraph, simState.peeps.diversityScores, simState.peeps.mutations.map(m => ({
+        xVal: m.generation,
+        yVal: m.num,
+        name: m.mutation
+      })));
       console.log(simState.peeps.mutations)
       break;
     default:

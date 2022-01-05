@@ -12,7 +12,7 @@ import { getRandomInt } from './utils';
 //   score: number;
 // }
 
-interface Mutation {
+export interface Mutation {
   mutation: string;
   num: number;
   generation: number;

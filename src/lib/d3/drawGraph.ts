@@ -92,6 +92,8 @@ export const svgInitGraph = (graphDefinition: GraphDefinition) => {
     .append('path')
     .style('fill', 'url(#gradient)');
 
+  svg.append('g').attr('id', 'events');
+
   return {
     svg,
     x,
@@ -101,9 +103,31 @@ export const svgInitGraph = (graphDefinition: GraphDefinition) => {
   };
 };
 
-export const svgDrawGraph = (graph: Graph, data: number[]) => {
+export interface GraphEvent {
+  xVal: number;
+  yVal: number;
+  name: string;
+}
+
+export const svgDrawGraph = (
+  graph: Graph,
+  data: number[],
+  events?: GraphEvent[]
+) => {
   graph.svg.select('#line').select('path').datum(data).attr('d', graph.line);
   graph.svg.select('#area').select('path').datum(data).attr('d', graph.area);
+
+  if (events)
+    graph.svg
+      .select('#events')
+      .selectAll('line')
+      .data(events)
+      .join('line')
+      .attr('x1', (d) => graph.x(d.xVal))
+      .attr('y1', graph.y(0))
+      .attr('x2', (d) => graph.x(d.xVal))
+      .attr('y2', graph.y(graph.y.domain()[1]))
+      .attr('stroke', 'black');
 };
 
 const createGradient = (

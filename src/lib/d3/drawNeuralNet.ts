@@ -9,6 +9,9 @@ const nnetMargin = { top: 0, right: 0, bottom: 0, left: 0 },
   nnetWidth = 600 - nnetMargin.left - nnetMargin.right,
   nnetHeight = 600 - nnetMargin.top - nnetMargin.bottom;
 
+const sensorXLoc = 180;
+const actionXLoc = 400;
+
 const getNames = (e: string[]) => e.filter((s) => isNaN(Number(s)));
 const sensorNames = getNames(Object.keys(Sensors));
 const actionNames = getNames(Object.keys(Actions));
@@ -40,7 +43,7 @@ export const svgInitNeuralNet = () => {
     .selectAll('circle')
     .data(sensorNames)
     .join('circle')
-    .attr('cx', 170)
+    .attr('cx', 180)
     .attr('cy', (d, i) => sensorY(i))
     .attr('r', 8);
 
@@ -49,7 +52,7 @@ export const svgInitNeuralNet = () => {
     .selectAll('text')
     .data(sensorNames)
     .join('text')
-    .attr('x', 150)
+    .attr('x', sensorXLoc - 20)
     .attr('y', (d, i) => sensorY(i))
     .text((d) => d)
     .style('text-anchor', 'end')
@@ -60,7 +63,7 @@ export const svgInitNeuralNet = () => {
     .selectAll('circle')
     .data(actionNames)
     .join('circle')
-    .attr('cx', 370)
+    .attr('cx', actionXLoc)
     .attr('cy', (d, i) => actionY(i))
     .attr('r', 8);
 
@@ -69,7 +72,7 @@ export const svgInitNeuralNet = () => {
     .selectAll('text')
     .data(actionNames)
     .join('text')
-    .attr('x', 390)
+    .attr('x', actionXLoc + 20)
     .attr('y', (d, i) => actionY(i))
     .text((d) => d)
     .style('text-anchor', 'start')
@@ -80,11 +83,11 @@ export const svgDrawNeuralNet = (indiv: Individual) => {
   const neuronY = d3
     .scaleLinear()
     .domain([0, indiv.nnet.neurons.length - 1])
-    .range([20, nnetHeight - 20]);
+    .range([60, nnetHeight - 60]);
   const neuronX = d3
     .scaleLinear()
     .domain([0, indiv.nnet.neurons.length - 1])
-    .range([270 - 50, 270 + 50]);
+    .range([290 - 50, 290 + 50]);
   const actionColor = d3
     .scaleSequential()
     .interpolator(d3.interpolateRdYlBu)
@@ -147,13 +150,13 @@ export const svgDrawNeuralNet = (indiv: Individual) => {
     .linkHorizontal<Synapse, [number, number]>()
     .source((d) => {
       return d.sourceType == Nodes.SENSOR
-        ? [170, sensorY(d.sourceIndex)]
+        ? [sensorXLoc, sensorY(d.sourceIndex)]
         : [neuronX(d.sourceIndex), neuronY(d.sourceIndex)];
     })
     .target((d) => {
       return d.sinkType == Nodes.NEURON
         ? [neuronX(d.sinkIndex), neuronY(d.sinkIndex)]
-        : [370, actionY(d.sinkIndex)];
+        : [actionXLoc, actionY(d.sinkIndex)];
     });
 
   nnetsvg

@@ -1,6 +1,6 @@
 # Evolved
 
-Typescript Webapp version of David Miller's [biosim4](https://github.com/davidrmiller/biosim4)
+Typescript Webapp conversion of David Miller's BioSim4 ([github](https://github.com/davidrmiller/biosim4) [youtube](https://www.youtube.com/watch?v=N3tRFayqVtk&ab_channel=davidrandallmiller))
 
 ![screenshot](screenshot.png)
 
@@ -15,9 +15,11 @@ Typescript Webapp version of David Miller's [biosim4](https://github.com/davidrm
 7. ~~Show signals~~
 8. Allow genomes of different number of genes
 9. ~~Online webapp~~
+10. Show in generation deaths
+11. Show mutations in diversity graph
 
 ## References
 
-1. [David Miller's BioSim4](https://www.youtube.com/watch?v=N3tRFayqVtk&ab_channel=davidrandallmiller)
+1. [BioSim4](https://github.com/davidrmiller/biosim4)
 1. [Quasar.dev](https://quasar.dev)
 1. [D3](https://d3js.org)
